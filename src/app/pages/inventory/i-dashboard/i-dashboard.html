@@ -1,5 +1,310 @@
-<div class="flex flex-col gap-4">
+<div class="flex flex-col gap-5">
 
-    <p class="text-muted-color text-sm m-0">Resumen del inventario</p>
+  <!-- Error -->
+  @if (error) {
+    <p-message severity="error" [text]="error" styleClass="w-full" />
+  }
+
+  <!-- ── Header ──────────────────────────────────────────────────────────── -->
+  <div class="flex align-items-center justify-content-between flex-wrap gap-3">
+    <div>
+      <h2 class="text-xl font-medium m-0">Dashboard de inventario</h2>
+      <span class="text-sm text-color-secondary">
+        Resumen de los últimos
+        <strong>{{ diasSeleccionados }} días</strong>
+      </span>
+    </div>
+    <div class="flex gap-2 align-items-center">
+      <p-selectbutton
+        [options]="diasOpciones"
+        [(ngModel)]="diasSeleccionados"
+        optionLabel="label"
+        optionValue="value"
+        [allowEmpty]="false"
+        size="small"
+        (onChange)="onDiasChange()" />
+      <p-button
+        icon="pi pi-refresh"
+        severity="secondary"
+        [text]="true"
+        size="small"
+        [loading]="loading"
+        pTooltip="Actualizar"
+        (onClick)="cargar()" />
+    </div>
+  </div>
+
+  <!-- ── Skeleton ────────────────────────────────────────────────────────── -->
+  @if (loading) {
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+      @for (i of skeletonRows.slice(0,4); track $index) {
+        <p-skeleton height="6rem" borderRadius="12px" />
+      }
+    </div>
+    <p-skeleton height="14rem" borderRadius="12px" />
+    <p-skeleton height="14rem" borderRadius="12px" />
+  }
+
+  @if (!loading && data) {
+
+    <!-- ── Cards de resumen ─────────────────────────────────────────────── -->
+    <div class="grid gap-3" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr))">
+
+      <!-- Sin movimiento -->
+      <div class="surface-card border-round-xl p-4 flex flex-col gap-1"
+           style="border: 0.5px solid var(--surface-border)">
+        <span class="text-xs text-color-secondary uppercase font-medium">Sin movimiento</span>
+        <span class="text-3xl font-medium text-orange-400">
+          {{ data.productos_sin_movimiento.length }}
+        </span>
+        <span class="text-xs text-color-secondary">productos en {{ diasSeleccionados }} días</span>
+      </div>
+
+      <!-- Bajo stock -->
+      <div class="surface-card border-round-xl p-4 flex flex-col gap-1"
+           style="border: 0.5px solid var(--surface-border)">
+        <span class="text-xs text-color-secondary uppercase font-medium">Bajo stock mínimo</span>
+        <span class="text-3xl font-medium text-red-400">
+          {{ data.productos_bajo_stock_minimo.length }}
+        </span>
+        <span class="text-xs text-color-secondary">requieren reposición</span>
+      </div>
+
+      <!-- Módulos -->
+      <div class="surface-card border-round-xl p-4 flex flex-col gap-1"
+           style="border: 0.5px solid var(--surface-border)">
+        <span class="text-xs text-color-secondary uppercase font-medium">Módulos activos</span>
+        <span class="text-3xl font-medium text-primary">
+          {{ data.modulos_activos.length }}
+        </span>
+        <span class="text-xs text-color-secondary">contratados</span>
+      </div>
+
+      <!-- Servicio -->
+      <div class="surface-card border-round-xl p-4 flex flex-col gap-2"
+           style="border: 0.5px solid var(--surface-border)">
+        <div class="flex align-items-center justify-content-between">
+          <span class="text-xs text-color-secondary uppercase font-medium">Servicio</span>
+          <p-tag
+            [value]="getServicioLabel()"
+            [severity]="getServicioSeverity()"
+            styleClass="text-xs" />
+        </div>
+        <span class="text-lg font-medium">{{ data.servicio.plan }}</span>
+        <span class="text-xs text-color-secondary">
+          @if (data.servicio.vencido) {
+            Venció el {{ data.servicio.fecha_vencimiento | date:'dd/MM/yyyy' }}
+          } @else {
+            Vence en <strong>{{ data.servicio.dias_restantes }}</strong> días
+          }
+        </span>
+      </div>
+
+    </div>
+
+    <!-- ── Tabla: productos sin movimiento ─────────────────────────────── -->
+    <div class="surface-card border-round-xl p-4"
+         style="border: 0.5px solid var(--surface-border)">
+
+      <div class="flex align-items-center justify-content-between mb-3">
+        <div>
+          <span class="font-medium block">Productos sin movimiento</span>
+          <span class="text-xs text-color-secondary">
+            Sin entradas ni salidas en los últimos {{ diasSeleccionados }} días
+          </span>
+        </div>
+        <p-tag
+          [value]="data.productos_sin_movimiento.length + ' productos'"
+          severity="warn"
+          styleClass="text-xs" />
+      </div>
+
+      <p-table
+        [value]="data.productos_sin_movimiento"
+        [paginator]="data.productos_sin_movimiento.length > 8"
+        [rows]="8"
+        dataKey="id"
+        styleClass="p-datatable-sm"
+        [tableStyle]="{'width':'100%'}">
+
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn="nombre">Producto <p-sortIcon field="nombre" /></th>
+            <th class="hidden md:table-cell">Categoría</th>
+            <th class="hidden md:table-cell">Unidad</th>
+            <th pSortableColumn="stock_actual" style="text-align:right">
+              Stock <p-sortIcon field="stock_actual" />
+            </th>
+            <th pSortableColumn="ultimo_movimiento" style="text-align:center" class="hidden md:table-cell">
+              Último mov. <p-sortIcon field="ultimo_movimiento" />
+            </th>
+            <th style="text-align:center">Acción</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-p>
+          <tr>
+            <td class="font-medium">{{ p.nombre }}</td>
+            <td class="hidden md:table-cell text-sm text-color-secondary">
+              {{ p.categoria ?? '—' }}
+            </td>
+            <td class="hidden md:table-cell text-sm text-color-secondary">
+              {{ p.unidad_medida }}
+            </td>
+            <td style="text-align:right" class="font-bold">
+              <span [class]="p.stock_actual === 0 ? 'text-red-400' :
+                             p.stock_actual <= p.stock_minimo ? 'text-orange-400' : ''">
+                {{ p.stock_actual }}
+              </span>
+            </td>
+            <td style="text-align:center" class="hidden md:table-cell text-sm text-color-secondary">
+              @if (p.ultimo_movimiento) {
+                {{ p.ultimo_movimiento | date:'dd/MM/yyyy' }}
+              } @else {
+                <span class="text-color-secondary">Nunca</span>
+              }
+            </td>
+            <td style="text-align:center">
+              <p-button
+                icon="pi pi-arrow-up-right"
+                severity="secondary"
+                [text]="true"
+                size="small"
+                pTooltip="Ver producto"
+                (onClick)="irAProducto(p.id)" />
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="6" class="text-center text-color-secondary py-5">
+              <i class="pi pi-check-circle text-4xl block mb-2 opacity-30 text-green-400"></i>
+              Todos los productos tuvieron movimiento en este período.
+            </td>
+          </tr>
+        </ng-template>
+
+      </p-table>
+    </div>
+
+    <!-- ── Tabla: bajo stock mínimo ────────────────────────────────────── -->
+    <div class="surface-card border-round-xl p-4"
+         style="border: 0.5px solid var(--surface-border)">
+
+      <div class="flex align-items-center justify-content-between mb-3">
+        <div>
+          <span class="font-medium block">Productos bajo stock mínimo</span>
+          <span class="text-xs text-color-secondary">Requieren reposición inmediata</span>
+        </div>
+        <p-tag
+          [value]="data.productos_bajo_stock_minimo.length + ' productos'"
+          severity="danger"
+          styleClass="text-xs" />
+      </div>
+
+      <p-table
+        [value]="data.productos_bajo_stock_minimo"
+        [paginator]="data.productos_bajo_stock_minimo.length > 8"
+        [rows]="8"
+        dataKey="id"
+        styleClass="p-datatable-sm"
+        [tableStyle]="{'width':'100%'}">
+
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn="nombre">Producto <p-sortIcon field="nombre" /></th>
+            <th class="hidden md:table-cell">Categoría</th>
+            <th style="text-align:right">Actual</th>
+            <th style="text-align:right" class="hidden md:table-cell">Mínimo</th>
+            <th style="text-align:right">Faltante</th>
+            <th class="hidden md:table-cell" style="min-width: 120px">Nivel</th>
+            <th style="text-align:center">Acción</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-p>
+          <tr>
+            <td class="font-medium">{{ p.nombre }}</td>
+            <td class="hidden md:table-cell text-sm text-color-secondary">
+              {{ p.categoria ?? '—' }}
+            </td>
+            <td style="text-align:right">
+              <span class="font-bold"
+                [class]="p.stock_actual === 0 ? 'text-red-400' : 'text-orange-400'">
+                {{ p.stock_actual }}
+              </span>
+            </td>
+            <td style="text-align:right" class="hidden md:table-cell text-color-secondary text-sm">
+              {{ p.stock_minimo }}
+            </td>
+            <td style="text-align:right">
+              <span class="font-bold text-red-400">-{{ p.faltante }}</span>
+            </td>
+            <td class="hidden md:table-cell" style="min-width: 120px">
+              <p-progressbar
+                [value]="getStockPct(p)"
+                [showValue]="false"
+                styleClass="h-1rem border-round"
+                [style]="{'height': '6px'}" />
+              <span class="text-xs text-color-secondary">{{ getStockPct(p) }}% del mínimo</span>
+            </td>
+            <td style="text-align:center">
+              <p-button
+                icon="pi pi-arrow-up-right"
+                severity="secondary"
+                [text]="true"
+                size="small"
+                pTooltip="Ver producto"
+                (onClick)="irAProducto(p.id)" />
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="7" class="text-center text-color-secondary py-5">
+              <i class="pi pi-check-circle text-4xl block mb-2 opacity-30 text-green-400"></i>
+              Todos los productos están sobre su stock mínimo.
+            </td>
+          </tr>
+        </ng-template>
+
+      </p-table>
+    </div>
+
+    <!-- ── Módulos activos ──────────────────────────────────────────────── -->
+    <div class="surface-card border-round-xl p-4"
+         style="border: 0.5px solid var(--surface-border)">
+
+      <div class="flex align-items-center justify-content-between mb-3">
+        <span class="font-medium">Módulos contratados</span>
+        <p-tag
+          [value]="data.modulos_activos.length + ' activos'"
+          severity="success"
+          styleClass="text-xs" />
+      </div>
+
+      <div class="flex flex-wrap gap-3">
+        @for (mod of data.modulos_activos; track mod.codigo) {
+          <div class="flex align-items-center gap-2 px-3 py-2 border-round-lg"
+               style="border: 0.5px solid var(--surface-border); background: var(--surface-ground)">
+            <i class="pi {{ mod.icono }} text-primary"></i>
+            <div class="flex flex-col">
+              <span class="text-sm font-medium">{{ mod.label }}</span>
+              <span class="text-xs text-color-secondary">
+                Desde {{ mod.fecha_activacion | date:'dd/MM/yyyy' }}
+              </span>
+            </div>
+          </div>
+        }
+        @if (data.modulos_activos.length === 0) {
+          <span class="text-sm text-color-secondary">Sin módulos activos.</span>
+        }
+      </div>
+
+    </div>
+
+  }
 
 </div>
