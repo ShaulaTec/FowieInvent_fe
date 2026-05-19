@@ -20,6 +20,7 @@ import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
 import { TooltipModule } from 'primeng/tooltip';
 import { AuthService } from '@/app/core/service/auth.service';
+import { IReports } from './i-reports/i-reports';
 
 @Component({
   selector: 'app-i-products',
@@ -28,7 +29,7 @@ import { AuthService } from '@/app/core/service/auth.service';
     CommonModule, FormsModule, TableModule, TagModule, ButtonModule,
     InputTextModule, IconFieldModule, InputIconModule,
     SkeletonModule, MessageModule, SelectButtonModule, IModal,
-    IMovimientoModal, TooltipModule
+    IMovimientoModal, TooltipModule, IReports
   ],
   templateUrl: './i-products.html',
   styleUrl: './i-products.scss',
@@ -53,6 +54,7 @@ export class IProducts implements OnInit, OnDestroy {
   skeletonRows = Array(10);
 
   modalVisible = false;
+  reporteVisible = false;
   selectedProducto: Producto | null = null;
 
   filtroActivo: 'todos' | 'activos' | 'inactivos' = 'todos';
@@ -205,5 +207,9 @@ export class IProducts implements OnInit, OnDestroy {
     this.router.navigate(['/system/inventory/categories', id],{
       state: { categoria }
     })
+  }
+
+  abrirReporte(){
+    this.reporteVisible = true
   }
 }
