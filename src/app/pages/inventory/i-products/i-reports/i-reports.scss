@@ -1,0 +1,15 @@
+:host ::ng-deep .reports-dialog {
+  width: min(92vw, 860px);
+
+  // Móvil: ocupa toda la pantalla como un sheet
+  @media (max-width: 640px) {
+    width: 100vw !important;
+    max-height: 100dvh !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+
+    .p-dialog-content {
+      padding: 1rem;
+    }
+  }
+}

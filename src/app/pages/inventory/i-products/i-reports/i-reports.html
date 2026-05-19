@@ -1,0 +1,191 @@
+<p-dialog
+  header="Reporte de movimientos"
+  [visible]="visible()"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [maximizable]="true"
+  styleClass="reports-dialog"
+  (onHide)="cerrar()"
+  (onShow)="cargarProductos()">
+
+  <div class="flex flex-col gap-4 pb-2">
+
+    <!-- Error -->
+    @if (error) {
+      <p-message severity="error" [text]="error" styleClass="w-full" />
+    }
+
+    <!-- ── Filtros ─────────────────────────────────────────────────────── -->
+    <div class="flex flex-wrap gap-3 align-items-end">
+
+      <div class="flex flex-col gap-1">
+        <label class="text-sm text-color-secondary">Desde</label>
+        <p-datepicker
+          [(ngModel)]="desde"
+          dateFormat="yy-mm-dd"
+          [maxDate]="hasta"
+          [showIcon]="true"
+          styleClass="w-11rem" />
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label class="text-sm text-color-secondary">Hasta</label>
+        <p-datepicker
+          [(ngModel)]="hasta"
+          dateFormat="yy-mm-dd"
+          [minDate]="desde"
+          [maxDate]="hoy"
+          [showIcon]="true"
+          styleClass="w-11rem" />
+      </div>
+
+      <div class="flex flex-col gap-1" style="min-width: 180px; flex: 1">
+        <label class="text-sm text-color-secondary">Producto (opcional)</label>
+        <p-select
+          [options]="productos"
+          [(ngModel)]="productoSeleccionado"
+          optionLabel="nombre"
+          placeholder="Todos los productos"
+          [showClear]="true"
+          styleClass="w-full" />
+      </div>
+
+      <div class="flex gap-2">
+        <p-button
+          icon="pi pi-search"
+          label="Buscar"
+          size="small"
+          [loading]="loading"
+          (onClick)="previsualizar()" />
+
+        @if (authService.tienePermiso('generar_reporte')) {
+          <p-button
+            icon="pi pi-file-pdf"
+            label="PDF"
+            severity="secondary"
+            [outlined]="true"
+            size="small"
+            [loading]="descargando"
+            [disabled]="!previsualizando || movimientos.length === 0"
+            pTooltip="Descargar PDF del período actual"
+            (onClick)="descargarPDF()" />
+        }
+      </div>
+
+    </div>
+
+    <p-divider styleClass="my-0" />
+
+    <!-- ── Skeleton ────────────────────────────────────────────────────── -->
+    @if (loading) {
+      <div class="flex gap-3">
+        @for (i of skeletonRows.slice(0,4); track $index) {
+          <p-skeleton height="4.5rem" borderRadius="8px" styleClass="flex-1" />
+        }
+      </div>
+      <p-skeleton height="10rem" borderRadius="8px" />
+    }
+
+    <!-- ── Estado vacío inicial ────────────────────────────────────────── -->
+    @if (!loading && !previsualizando) {
+      <div class="text-center text-color-secondary py-6">
+        <i class="pi pi-chart-bar text-4xl block mb-2 opacity-30"></i>
+        <span class="text-sm">Selecciona un rango y pulsa <strong>Buscar</strong> para previsualizar.</span>
+      </div>
+    }
+
+    <!-- ── Resumen ──────────────────────────────────────────────────────── -->
+    @if (!loading && resumen) {
+      <div class="flex gap-3 flex-wrap">
+
+        <div class="surface-ground border-round p-3 text-center flex-1" style="min-width:90px">
+          <div class="text-2xl font-medium">{{ resumen.total }}</div>
+          <div class="text-xs text-color-secondary mt-1">Movimientos</div>
+        </div>
+
+        <div class="surface-ground border-round p-3 text-center flex-1" style="min-width:90px">
+          <div class="text-2xl font-medium text-green-500">{{ resumen.entradas }}</div>
+          <div class="text-xs text-color-secondary mt-1">Entradas</div>
+        </div>
+
+        <div class="surface-ground border-round p-3 text-center flex-1" style="min-width:90px">
+          <div class="text-2xl font-medium text-red-400">{{ resumen.salidas }}</div>
+          <div class="text-xs text-color-secondary mt-1">Salidas</div>
+        </div>
+
+        <div class="surface-ground border-round p-3 text-center flex-1" style="min-width:90px">
+          <div class="text-2xl font-medium">{{ resumen.productosDistintos }}</div>
+          <div class="text-xs text-color-secondary mt-1">Productos</div>
+        </div>
+
+      </div>
+    }
+
+    <!-- ── Tabla ────────────────────────────────────────────────────────── -->
+    @if (!loading && previsualizando) {
+      <span class="text-sm text-color-secondary">
+        {{ movimientos.length }} movimiento{{ movimientos.length !== 1 ? 's' : '' }}
+      </span>
+
+      <p-table
+        [value]="movimientos"
+        [paginator]="true"
+        [rows]="8"
+        [rowsPerPageOptions]="[8, 20, 50]"
+        dataKey="id"
+        styleClass="p-datatable-sm"
+        [tableStyle]="{'width':'100%'}"
+        [scrollable]="true"
+        scrollHeight="320px">
+
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn="fecha">Fecha <p-sortIcon field="fecha" /></th>
+            <th>Producto</th>
+            <th style="text-align:center">Tipo</th>
+            <th pSortableColumn="cantidad" style="text-align:right">
+              Cant. <p-sortIcon field="cantidad" />
+            </th>
+            <th class="hidden md:table-cell">Motivo</th>
+            <th class="hidden md:table-cell">Usuario</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-mov>
+          <tr>
+            <td class="text-sm text-color-secondary white-space-nowrap">
+              {{ mov.fecha | date:'dd/MM/yy HH:mm' }}
+            </td>
+            <td class="font-medium">{{ mov.producto_nombre ?? mov.producto }}</td>
+            <td style="text-align:center">
+              <p-tag
+                [value]="mov.tipo === 'entrada' ? 'Entrada' : 'Salida'"
+                [severity]="getTipoSeverity(mov.tipo)"
+                styleClass="text-xs" />
+            </td>
+            <td style="text-align:right" class="font-bold">{{ mov.cantidad }}</td>
+            <td class="hidden md:table-cell text-sm text-color-secondary">
+              {{ mov.motivo || '—' }}
+            </td>
+            <td class="hidden md:table-cell text-sm text-color-secondary">
+              {{ mov.usuario_email ?? mov.usuario }}
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="6" class="text-center text-color-secondary py-5">
+              <i class="pi pi-inbox text-4xl mb-2 block opacity-30"></i>
+              Sin movimientos en este rango.
+            </td>
+          </tr>
+        </ng-template>
+
+      </p-table>
+    }
+
+  </div>
+
+</p-dialog>
