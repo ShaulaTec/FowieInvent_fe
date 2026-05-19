@@ -20,6 +20,7 @@ import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
 import { TooltipModule } from 'primeng/tooltip';
 import { AuthService } from '@/app/core/service/auth.service';
+import { IReports } from './i-reports/i-reports';
 
 @Component({
   selector: 'app-i-products',
@@ -28,14 +29,14 @@ import { AuthService } from '@/app/core/service/auth.service';
     CommonModule, FormsModule, TableModule, TagModule, ButtonModule,
     InputTextModule, IconFieldModule, InputIconModule,
     SkeletonModule, MessageModule, SelectButtonModule, IModal,
-    IMovimientoModal, TooltipModule
+    IMovimientoModal, TooltipModule, IReports
   ],
   templateUrl: './i-products.html',
   styleUrl: './i-products.scss',
 })
 export class IProducts implements OnInit, OnDestroy {
 
-  
+
   authService = inject(AuthService)
   private inventoryService = inject(InventoryService);
   private confirmService = inject(ConfirmService);
@@ -43,7 +44,7 @@ export class IProducts implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
   private sub = new Subscription();
-  
+
   navItems = this.authService.getNavItems('inventory');
   productos: Producto[] = [];
   movimientoVisible = false;
@@ -53,6 +54,7 @@ export class IProducts implements OnInit, OnDestroy {
   skeletonRows = Array(10);
 
   modalVisible = false;
+  reporteVisible = false;
   selectedProducto: Producto | null = null;
 
   filtroActivo: 'todos' | 'activos' | 'inactivos' = 'todos';
@@ -72,6 +74,11 @@ export class IProducts implements OnInit, OnDestroy {
     this.loadProductos();
     this.sub.add(
       this.inventoryState.openCreateProducto$.subscribe(() => this.openCreate())
+    );
+    this.sub.add(
+      this.inventoryState.openReporte$.subscribe(() => {
+        this.reporteVisible = true;
+      })
     );
   }
 
@@ -202,8 +209,12 @@ export class IProducts implements OnInit, OnDestroy {
   }
 
   goToCategoria(id: string, categoria: any) {
-    this.router.navigate(['/system/inventory/categories', id],{
+    this.router.navigate(['/system/inventory/categories', id], {
       state: { categoria }
     })
+  }
+
+  abrirReporte() {
+    this.reporteVisible = true
   }
 }

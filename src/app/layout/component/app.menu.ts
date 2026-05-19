@@ -39,15 +39,7 @@ export class AppMenu implements OnInit {
                     ...(tiene('ver_inventario') ? [{
                         label: 'Inventario',
                         icon: 'pi pi-fw pi-box',
-                        items: [
-                            { label: 'Dashboard',   icon: 'pi pi-fw pi-home', routerLink: ['/system/inventory'] },
-                            ...(tiene('editar_producto') || tiene('eliminar_producto') ? [
-                                { label: 'Productos', icon: 'pi pi-fw pi-box', routerLink: ['/system/inventory/products'] }
-                            ] : []),
-                            ...(tiene('gestionar_categorias') ? [
-                                { label: 'Categorías', icon: 'pi pi-fw pi-tag', routerLink: ['/system/inventory/categories'] }
-                            ] : []),
-                        ]
+                        routerLink: ['/system/inventory']
                     }] : []),
                 ]
             },

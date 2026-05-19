@@ -1,4 +1,4 @@
-import { Component, inject, computed } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -6,7 +6,7 @@ import { CardModule } from 'primeng/card';
 import { TagModule } from 'primeng/tag';
 import { DividerModule } from 'primeng/divider';
 import { AuthService } from '../../core/service/auth.service';
-import { AppNav, NavItem } from '@/app/layout/component/app.nav';
+import { AppNav } from '@/app/layout/component/app.nav';
 
 interface ModuleCard {
     icon: string;
