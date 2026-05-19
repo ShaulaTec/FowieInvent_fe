@@ -11,6 +11,7 @@ import {
     CreateCategoriaDto,
     UpdateCategoriaDto,
     CreateMovimientoDto,
+    DashboardData,
 } from '../models/inventory.models';
 
 @Injectable({ providedIn: 'root' })
@@ -112,5 +113,14 @@ export class InventoryService {
             params: httpParams,
             responseType: 'blob',
         });
+    }
+
+    // ── Dashboard ─────────────────────────────────────────────────────────────
+
+    getDashboard(dias: number = 30): Observable<DashboardData> {
+        return this.http.get<DashboardData>(
+            `${this.base}/inventory/dashboard/`,
+            { params: new HttpParams().set('dias', dias.toString()) }
+        );
     }
 }
