@@ -2,6 +2,7 @@ import { Component, Input } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
+import { DividerModule } from 'primeng/divider';
 
 export interface NavItem {
   label: string;
@@ -12,7 +13,12 @@ export interface NavItem {
 @Component({
   selector: 'app-nav',
   standalone: true,
-  imports: [CommonModule, RouterModule, ButtonModule],
+  imports: [
+    CommonModule,
+    RouterModule, 
+    ButtonModule,
+    DividerModule
+  ],
   templateUrl: './app.nav.html',
 })
 export class AppNav {
