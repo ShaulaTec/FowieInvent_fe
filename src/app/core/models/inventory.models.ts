@@ -59,3 +59,48 @@ export interface CreateMovimientoDto {
     cantidad: number;
     motivo?: string;
 }
+
+export interface ProductoSinMovimiento {
+    id: string;
+    nombre: string;
+    unidad_medida: string;
+    stock_actual: number;
+    stock_minimo: number;
+    categoria: string | null;
+    ultimo_movimiento: string | null;
+}
+
+export interface ProductoBajoStock {
+    id: string;
+    nombre: string;
+    unidad_medida: string;
+    stock_actual: number;
+    stock_minimo: number;
+    faltante: number;
+    categoria: string | null;
+}
+
+export interface ServicioInfo {
+    fecha_vencimiento: string;
+    dias_restantes: number;
+    estado: string;
+    plan: string;
+    vencido: boolean;
+}
+
+export interface ModuloActivo {
+    codigo: string;
+    nombre: string;
+    label: string;
+    icono: string;
+    ruta: string;
+    fecha_activacion: string;
+}
+
+export interface DashboardData {
+    parametros: { dias: number; fecha_limite: string };
+    productos_sin_movimiento: ProductoSinMovimiento[];
+    productos_bajo_stock_minimo: ProductoBajoStock[];
+    servicio: ServicioInfo;
+    modulos_activos: ModuloActivo[];
+}
