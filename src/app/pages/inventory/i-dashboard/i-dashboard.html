@@ -36,7 +36,7 @@
 
   <!-- ── Skeleton ────────────────────────────────────────────────────────── -->
   @if (loading) {
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+    <div class="grid gap-3" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr))">
       @for (i of skeletonRows.slice(0,4); track $index) {
         <p-skeleton height="6rem" borderRadius="12px" />
       }
@@ -50,9 +50,8 @@
     <!-- ── Cards de resumen ─────────────────────────────────────────────── -->
     <div class="grid gap-3" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr))">
 
-      <!-- Sin movimiento -->
-      <div class="surface-card border-round-xl p-4 flex flex-col gap-1"
-           style="border: 0.5px solid var(--surface-border)">
+      <div class="border-round-xl p-4 flex flex-col gap-1"
+           style="border: 0.5px solid var(--p-content-border-color); background: var(--p-content-background)">
         <span class="text-xs text-color-secondary uppercase font-medium">Sin movimiento</span>
         <span class="text-3xl font-medium text-orange-400">
           {{ data.productos_sin_movimiento.length }}
@@ -60,9 +59,8 @@
         <span class="text-xs text-color-secondary">productos en {{ diasSeleccionados }} días</span>
       </div>
 
-      <!-- Bajo stock -->
-      <div class="surface-card border-round-xl p-4 flex flex-col gap-1"
-           style="border: 0.5px solid var(--surface-border)">
+      <div class="border-round-xl p-4 flex flex-col gap-1"
+           style="border: 0.5px solid var(--p-content-border-color); background: var(--p-content-background)">
         <span class="text-xs text-color-secondary uppercase font-medium">Bajo stock mínimo</span>
         <span class="text-3xl font-medium text-red-400">
           {{ data.productos_bajo_stock_minimo.length }}
@@ -70,9 +68,8 @@
         <span class="text-xs text-color-secondary">requieren reposición</span>
       </div>
 
-      <!-- Módulos -->
-      <div class="surface-card border-round-xl p-4 flex flex-col gap-1"
-           style="border: 0.5px solid var(--surface-border)">
+      <div class="border-round-xl p-4 flex flex-col gap-1"
+           style="border: 0.5px solid var(--p-content-border-color); background: var(--p-content-background)">
         <span class="text-xs text-color-secondary uppercase font-medium">Módulos activos</span>
         <span class="text-3xl font-medium text-primary">
           {{ data.modulos_activos.length }}
@@ -80,9 +77,8 @@
         <span class="text-xs text-color-secondary">contratados</span>
       </div>
 
-      <!-- Servicio -->
-      <div class="surface-card border-round-xl p-4 flex flex-col gap-2"
-           style="border: 0.5px solid var(--surface-border)">
+      <div class="border-round-xl p-4 flex flex-col gap-2"
+           style="border: 0.5px solid var(--p-content-border-color); background: var(--p-content-background)">
         <div class="flex align-items-center justify-content-between">
           <span class="text-xs text-color-secondary uppercase font-medium">Servicio</span>
           <p-tag
@@ -103,8 +99,8 @@
     </div>
 
     <!-- ── Tabla: productos sin movimiento ─────────────────────────────── -->
-    <div class="surface-card border-round-xl p-4"
-         style="border: 0.5px solid var(--surface-border)">
+    <div class="border-round-xl p-4"
+         style="border: 0.5px solid var(--p-content-border-color); background: var(--p-content-background)">
 
       <div class="flex align-items-center justify-content-between mb-3">
         <div>
@@ -189,8 +185,8 @@
     </div>
 
     <!-- ── Tabla: bajo stock mínimo ────────────────────────────────────── -->
-    <div class="surface-card border-round-xl p-4"
-         style="border: 0.5px solid var(--surface-border)">
+    <div class="border-round-xl p-4"
+         style="border: 0.5px solid var(--p-content-border-color); background: var(--p-content-background)">
 
       <div class="flex align-items-center justify-content-between mb-3">
         <div>
@@ -245,7 +241,6 @@
               <p-progressbar
                 [value]="getStockPct(p)"
                 [showValue]="false"
-                styleClass="h-1rem border-round"
                 [style]="{'height': '6px'}" />
               <span class="text-xs text-color-secondary">{{ getStockPct(p) }}% del mínimo</span>
             </td>
@@ -274,8 +269,8 @@
     </div>
 
     <!-- ── Módulos activos ──────────────────────────────────────────────── -->
-    <div class="surface-card border-round-xl p-4"
-         style="border: 0.5px solid var(--surface-border)">
+    <div class="border-round-xl p-4"
+         style="border: 0.5px solid var(--p-content-border-color); background: var(--p-content-background)">
 
       <div class="flex align-items-center justify-content-between mb-3">
         <span class="font-medium">Módulos contratados</span>
@@ -288,7 +283,7 @@
       <div class="flex flex-wrap gap-3">
         @for (mod of data.modulos_activos; track mod.codigo) {
           <div class="flex align-items-center gap-2 px-3 py-2 border-round-lg"
-               style="border: 0.5px solid var(--surface-border); background: var(--surface-ground)">
+               style="border: 0.5px solid var(--p-content-border-color)">
             <i class="pi {{ mod.icono }} text-primary"></i>
             <div class="flex flex-col">
               <span class="text-sm font-medium">{{ mod.label }}</span>
