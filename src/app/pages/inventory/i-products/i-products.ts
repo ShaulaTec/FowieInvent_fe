@@ -36,7 +36,7 @@ import { IReports } from './i-reports/i-reports';
 })
 export class IProducts implements OnInit, OnDestroy {
 
-  
+
   authService = inject(AuthService)
   private inventoryService = inject(InventoryService);
   private confirmService = inject(ConfirmService);
@@ -44,7 +44,7 @@ export class IProducts implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
   private sub = new Subscription();
-  
+
   navItems = this.authService.getNavItems('inventory');
   productos: Producto[] = [];
   movimientoVisible = false;
@@ -74,6 +74,11 @@ export class IProducts implements OnInit, OnDestroy {
     this.loadProductos();
     this.sub.add(
       this.inventoryState.openCreateProducto$.subscribe(() => this.openCreate())
+    );
+    this.sub.add(
+      this.inventoryState.openReporte$.subscribe(() => {
+        this.reporteVisible = true;
+      })
     );
   }
 
@@ -204,12 +209,12 @@ export class IProducts implements OnInit, OnDestroy {
   }
 
   goToCategoria(id: string, categoria: any) {
-    this.router.navigate(['/system/inventory/categories', id],{
+    this.router.navigate(['/system/inventory/categories', id], {
       state: { categoria }
     })
   }
 
-  abrirReporte(){
+  abrirReporte() {
     this.reporteVisible = true
   }
 }

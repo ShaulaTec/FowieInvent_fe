@@ -30,4 +30,9 @@ export class InventoryStateService {
     private _openMovimiento$ = new Subject<void>();
     readonly openMovimiento$ = this._openMovimiento$.asObservable();
     triggerMovimiento() { this._openMovimiento$.next(); }
+
+    // ── Reportes ──────────────────────────────────────────────────────────
+    private _openReporte$ = new Subject<void>();
+    readonly openReporte$ = this._openReporte$.asObservable();
+    triggerReporte() { this._openReporte$.next(); }
 }

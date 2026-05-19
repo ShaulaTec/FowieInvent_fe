@@ -50,16 +50,11 @@ export class AppSpeeddial implements OnInit, OnDestroy {
                 icon: 'pi pi-plus',
                 tooltipOptions: { tooltipLabel: 'Nuevo producto' },
                 command: () => this.inventoryState.triggerCreateProducto(),
-            },
+            }, 
             {
-                icon: 'pi pi-arrow-right-arrow-left',
-                tooltipOptions: { tooltipLabel: 'Nuevo movimiento' },
-                command: () => this.messageService.add({ severity: 'info', summary: 'Movimiento', detail: 'Próximamente' }),
-            },
-            {
-                icon: 'pi pi-file-export',
-                tooltipOptions: { tooltipLabel: 'Exportar reporte' },
-                command: () => this.messageService.add({ severity: 'info', summary: 'Exportar', detail: 'Próximamente' }),
+                icon: 'pi pi-file-pdf',
+                tooltipOptions: { tooltipLabel: 'Reporte PDF' },
+                command: () => this.inventoryState.triggerReporte(),
             },
         ];
     }
@@ -74,7 +69,7 @@ export class AppSpeeddial implements OnInit, OnDestroy {
             {
                 icon: 'pi pi-arrow-right-arrow-left',
                 tooltipOptions: { tooltipLabel: 'Registrar movimiento' },
-                command: () => this.inventoryState.triggerMovimiento(), 
+                command: () => this.inventoryState.triggerMovimiento(),
             },
             {
                 icon: 'pi pi-trash',
