@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, forkJoin } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
@@ -80,8 +80,13 @@ export class InventoryService {
 
     // ── Movimientos ───────────────────────────────────────────────────────────
 
-    getMovimientos(): Observable<Movimiento[]> {
-        return this.http.get<Movimiento[]>(`${this.base}/inventory/movimientos/`);
+    getMovimientos(params?: { desde?: string; hasta?: string; producto?: string }): Observable<Movimiento[]> {
+        let httpParams = new HttpParams();
+        if (params?.desde) httpParams = httpParams.set('desde', params.desde);
+        if (params?.hasta) httpParams = httpParams.set('hasta', params.hasta);
+        if (params?.producto) httpParams = httpParams.set('producto', params.producto);
+
+        return this.http.get<Movimiento[]>(`${this.base}/inventory/movimientos/`, { params: httpParams });
     }
 
     getMovimientosByProducto(productoId: string): Observable<Movimiento[]> {
@@ -92,5 +97,20 @@ export class InventoryService {
 
     createMovimiento(dto: CreateMovimientoDto): Observable<Movimiento> {
         return this.http.post<Movimiento>(`${this.base}/inventory/movimientos/`, dto);
+    }
+
+
+    // ── Reportes ───────────────────────────────────────────────────────────
+
+    descargarReportePDF(params: { desde: string; hasta: string; producto?: string }): Observable<Blob> {
+        let httpParams = new HttpParams()
+            .set('desde', params.desde)
+            .set('hasta', params.hasta);
+        if (params.producto) httpParams = httpParams.set('producto', params.producto);
+
+        return this.http.get(`${this.base}/inventory/reportes/movimientos.pdf/`, {
+            params: httpParams,
+            responseType: 'blob',
+        });
     }
 }
