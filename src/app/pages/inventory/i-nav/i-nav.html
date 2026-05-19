@@ -1,0 +1,32 @@
+<div class="flex align-items-center gap-2 p-1 mb-4 border-round surface-card w-full">
+
+    <!-- Volver -->
+    <p-button
+        label="Volver"
+        icon="pi pi-arrow-left"
+        severity="secondary"
+        [text]="true"
+        size="small"
+        (onClick)="goBack()">
+    </p-button>
+
+    <div class="border-left-1 surface-border mx-1" style="height: 1.25rem;"></div>
+
+    <!-- Secciones -->
+    @for (item of navItems; track item.route) {
+    <p-button
+        [label]="item.label"
+        [icon]="item.icon"
+        [severity]="isActive(item.route) ? 'primary' : 'secondary'"
+        [text]="!isActive(item.route)"
+        size="small"
+        [routerLink]="item.route">
+    </p-button>
+    }
+
+    <!-- Acciones proyectadas: solo desktop, en móvil las reemplaza el SpeedDial -->
+    <div class="hidden md:flex align-items-center gap-1 ml-auto">
+        <ng-content></ng-content>
+    </div>
+
+</div>

@@ -14,8 +14,12 @@
     <li><a href="#equipo">Equipo</a></li>
   </ul>
 
-  <p-button label="Solicitar acceso" size="small" (onClick)="onRequestAccess()">
-  </p-button>
+  <div class="flex align-items-center gap-1">
+    <p-button severity="contrast" label="Ingresar a mi Cuenta" size="small" (onClick)="onLogin()">
+    </p-button>
+    <p-button label="Solicitar acceso" size="small" (onClick)="onRequestAccess()">
+    </p-button>
+  </div>
 </nav>
 
 <!-- ═══════════════════════════════════════════════════════════

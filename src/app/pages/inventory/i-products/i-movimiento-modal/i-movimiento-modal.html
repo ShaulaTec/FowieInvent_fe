@@ -1,0 +1,79 @@
+<p-dialog
+    header="Registrar movimiento"
+    [visible]="visible()"
+    (visibleChange)="!$event && onClose()"
+    (onShow)="onShow()"
+    [modal]="true"
+    [draggable]="false"
+    [resizable]="false"
+    styleClass="w-full"
+    [style]="{ maxWidth: '440px' }">
+
+    <div class="flex flex-col gap-4 py-2">
+
+        @if (error) {
+            <p-message severity="error" [text]="error" styleClass="w-full" />
+        }
+
+        <!-- Producto (readonly, contexto) -->
+        @if (producto(); as p) {
+            <div class="flex align-items-center gap-3 p-3 border-round"
+                style="background: var(--surface-50); border: 1px solid var(--surface-border);">
+                <i class="pi pi-box text-muted-color"></i>
+                <div class="flex flex-col gap-0">
+                    <span class="font-semibold text-sm">{{ p.nombre }}</span>
+                    <span class="text-xs text-muted-color">
+                        Stock actual: <strong>{{ p.stock_actual }}</strong> {{ p.unidad_medida }}
+                    </span>
+                </div>
+            </div>
+        }
+
+        <!-- Tipo -->
+        <div class="flex flex-col gap-1">
+            <label class="font-medium text-sm">Tipo <span class="text-red-400">*</span></label>
+            <p-selectbutton
+                [options]="tipoOpciones"
+                [(ngModel)]="tipo"
+                optionLabel="label"
+                optionValue="value"
+                [allowEmpty]="false"
+                styleClass="w-full" />
+        </div>
+
+        <!-- Cantidad -->
+        <div class="flex flex-col gap-1">
+            <label class="font-medium text-sm">Cantidad <span class="text-red-400">*</span></label>
+            <p-inputnumber
+                [(ngModel)]="cantidad"
+                [min]="1"
+                [max]="tipo === 'salida' ? (producto()?.stock_actual ?? 9999) : 9999"
+                styleClass="w-full" />
+            @if (tipo === 'salida' && producto()) {
+                <span class="text-xs text-muted-color">
+                    Máximo disponible: {{ producto()!.stock_actual }} {{ producto()!.unidad_medida }}
+                </span>
+            }
+        </div>
+
+        <!-- Motivo -->
+        <div class="flex flex-col gap-1">
+            <label class="font-medium text-sm">Motivo <span class="text-muted-color text-xs">(opcional)</span></label>
+            <input pInputText [(ngModel)]="motivo" placeholder="Ej. Compra a proveedor, uso interno..." class="w-full" />
+        </div>
+
+    </div>
+
+    <ng-template pTemplate="footer">
+        <div class="flex justify-content-end gap-2">
+            <p-button label="Cancelar" severity="secondary" [outlined]="true"
+                (onClick)="onClose()" [disabled]="loading" />
+            <p-button
+                [label]="tipo === 'entrada' ? 'Registrar entrada' : 'Registrar salida'"
+                [severity]="tipo === 'entrada' ? 'success' : 'danger'"
+                [loading]="loading"
+                (onClick)="onSave()" />
+        </div>
+    </ng-template>
+
+</p-dialog>

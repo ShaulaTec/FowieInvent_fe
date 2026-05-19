@@ -1,0 +1,107 @@
+<div class="flex flex-col gap-4">
+    <!-- Error -->
+    @if (error) {
+    <p-message severity="error" [text]="error" styleClass="w-full" />
+    }
+
+    <!-- Skeleton -->
+    @if (loading) {
+    <div class="flex flex-col gap-4">
+        <p-skeleton width="40%" height="2rem" borderRadius="6px" />
+        <p-skeleton width="15%" height="1rem" borderRadius="4px" />
+        <p-divider />
+        <div class="grid">
+            @for (i of [1,2]; track i) {
+            <div class="col-12 md:col-6 flex flex-col gap-1 mb-3">
+                <p-skeleton width="6rem" height="0.75rem" borderRadius="4px" />
+                <p-skeleton width="50%" height="1.25rem" borderRadius="4px" />
+            </div>
+            }
+        </div>
+    </div>
+    }
+
+    <!-- Contenido -->
+    @if (!loading && categoria) {
+    <div class="flex align-items-center justify-content-between">
+        <h2 class="text-2xl font-bold m-0 flex-1">{{ categoria.nombre }}</h2>
+        <div class="flex align-items-center gap-2">
+            <p-button label="Editar" icon="pi pi-pencil" size="small" (onClick)="openEdit()" />
+            <p-button icon="pi pi-trash" severity="danger" [outlined]="true" size="small" (onClick)="onDelete()" />
+        </div>
+    </div>
+
+    <p-divider />
+
+    <div class="grid">
+        <div class="col-12 md:col-6 flex flex-col gap-1 mb-3">
+            <span class="text-xs text-muted-color font-medium uppercase" style="letter-spacing: 0.05em;">Estado</span>
+            <div class="flex align-items-center gap-2">
+                <i class="pi"
+                    [ngClass]="categoria.activo ? 'pi-check-circle text-green-500' : 'pi-times-circle text-red-400'"></i>
+                <span class="font-medium">{{ categoria.activo ? 'Activa' : 'Inactiva' }}</span>
+            </div>
+        </div>
+        <div class="col-12 md:col-6 flex flex-col gap-1 mb-3">
+            <span class="text-xs text-muted-color font-medium uppercase" style="letter-spacing: 0.05em;">ID</span>
+            <span class="text-muted-color text-sm font-mono">{{ categoria.id }}</span>
+        </div>
+    </div>
+
+    <p-divider />
+
+    <!-- Productos -->
+    <div class="flex flex-col gap-3">
+        <div class="flex align-items-center justify-content-between">
+            <span class="text-xs text-muted-color font-medium uppercase"
+                style="letter-spacing: 0.05em;">Productos</span>
+            <p-tag [value]="productos.length + ' productos'" severity="secondary" />
+        </div>
+
+        @if (productos.length === 0) {
+        <div class="flex flex-col align-items-center gap-2 py-5 text-muted-color">
+            <i class="pi pi-inbox text-4xl"></i>
+            <span class="text-sm">Esta categoría no tiene productos.</span>
+        </div>
+        } @else {
+        <p-table [value]="productos" [stripedRows]="true" size="small">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>Nombre</th>
+                    <th>Unidad</th>
+                    <th class="text-right">Stock actual</th>
+                    <th class="text-right">Stock mínimo</th>
+                    <th class="text-center">Estado</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-producto>
+                <tr (click)="goToProducto(producto)" class="cursor-pointer">
+                    <td class="font-medium">{{ producto.nombre }}</td>
+                    <td class="text-muted-color text-sm">{{ producto.unidad_medida }}</td>
+                    <td class="text-right">
+                        <span class="font-semibold"
+                            [ngClass]="producto.stock_actual <= producto.stock_minimo ? 'text-red-500' : 'text-green-500'">
+                            {{ producto.stock_actual }}
+                        </span>
+                    </td>
+                    <td class="text-right text-muted-color text-sm">{{ producto.stock_minimo }}</td>
+                    <td class="text-center">
+                        <i class="pi text-sm"
+                            [ngClass]="producto.activo ? 'pi-check-circle text-green-400' : 'pi-times-circle text-red-300'"
+                            [title]="producto.activo ? 'Activo' : 'Inactivo'">
+                        </i>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+        }
+    </div>
+    }
+
+</div>
+
+<!-- Modal editar -->
+@if (categoria) {
+<app-i-cmodal [visible]="modalVisible" [categoria]="categoria" (closed)="onModalClosed()"
+    (saved)="onModalSaved($event)" />
+}

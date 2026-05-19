@@ -4,57 +4,36 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap, catchError, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
-
-// ── Interfaces ────────────────────────────────────────────────────────────────
-
-export interface LoginRequest {
-    email: string;
-    password: string;
-}
-
-export interface RegisterRequest {
-    nombre: string;
-    apellido: string;
-    email: string;
-    password: string;
-    nombre_negocio: string;
-    plan_id?: string;
-}
-
-export interface AuthTokens {
-    access: string;
-    refresh: string;
-}
-
-export interface AuthUser {
-    id: string;
-    email: string;
-    tenant: string;
-    rol: string;
-}
-
-export interface AuthResponse extends AuthTokens {
-    user?: AuthUser;
-}
+import { LoginRequest, RegisterRequest, AuthTokens, AuthUser, AuthResponse, PermisoNav } from '../models/auth.models';
+import { NavItem } from '@/app/layout/component/app.nav';
 
 // ── Service ───────────────────────────────────────────────────────────────────
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
 
-    private readonly ACCESS_KEY  = 'fi_access';
+    private readonly ACCESS_KEY = 'fi_access';
     private readonly REFRESH_KEY = 'fi_refresh';
-    private readonly USER_KEY    = 'fi_user';
+    private readonly USER_KEY = 'fi_user';
 
     // Signal reactivo — los componentes pueden leer `currentUser()` directamente
     private _currentUser = signal<AuthUser | null>(this.loadUser());
     readonly currentUser = this._currentUser.asReadonly();
-    readonly isLoggedIn  = computed(() => !!this._currentUser());
+    readonly isLoggedIn = computed(() => !!this._currentUser());
 
     constructor(
         private http: HttpClient,
         private router: Router,
-    ) {}
+    ) { }
+
+    fetchMe(): Observable<AuthUser> {
+        return this.http.get<AuthUser>(`${environment.apiUrl}/users/me/`).pipe(
+            tap(user => {
+                localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+                this._currentUser.set(user);
+            })
+        );
+    }
 
     // ── Login ─────────────────────────────────────────────────────────────────
 
@@ -110,10 +89,56 @@ export class AuthService {
         return localStorage.getItem(this.REFRESH_KEY);
     }
 
+    getNavItems(moduloCodigo: string): NavItem[] {
+        const user = this._currentUser();
+        if (!user?.permisos?.length) return [];
+        return this.deduplicarNavItems(
+            user.permisos.filter(p => p.modulo?.codigo === moduloCodigo)
+        );
+    }
+
+    private deduplicarNavItems(permisos: PermisoNav[]): NavItem[] {
+        const vistos = new Set<string>();
+        const items: NavItem[] = [];
+        for (const p of permisos) {
+            if (!vistos.has(p.submodulo)) {
+                vistos.add(p.submodulo);
+                items.push({ label: p.submodulo, icon: p.icono, route: p.ruta });
+            }
+        }
+        return items;
+    }
+
+    getModulosRaiz(): NavItem[] {
+        const user = this._currentUser();
+        if (!user?.permisos?.length) return [];
+
+        const vistos = new Set<string>();
+        const items: NavItem[] = [];
+
+        for (const p of user.permisos) {
+            if (!p.modulo || vistos.has(p.modulo.codigo)) continue;
+            vistos.add(p.modulo.codigo);
+            items.push({
+                label: p.modulo.label,
+                icon: p.modulo.icono,
+                route: p.modulo.ruta,
+            });
+        }
+        return items;
+    }
+
+    tienePermiso(codigo: string): boolean {
+        const user = this._currentUser();
+        if (!user) return false;
+        if (user.rol === 'Owner') return true;
+        return user.permisos?.some(p => p.codigo === codigo) ?? false;
+    }
+
     // ── Private ───────────────────────────────────────────────────────────────
 
     private saveSession(res: AuthResponse): void {
-        localStorage.setItem(this.ACCESS_KEY,  res.access);
+        localStorage.setItem(this.ACCESS_KEY, res.access);
         localStorage.setItem(this.REFRESH_KEY, res.refresh);
         if (res.user) {
             localStorage.setItem(this.USER_KEY, JSON.stringify(res.user));

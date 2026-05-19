@@ -1,4 +1,3 @@
-// app.routes.ts
 import { Routes } from '@angular/router';
 import { AppLayout } from './app/layout/component/app.layout';
 import { Landing } from './app/pages/landing/landing';
@@ -14,7 +13,7 @@ export const appRoutes: Routes = [
 
     // ── Autenticada: sistema ──────────────────────────────────────────────────
     {
-        path: 'sistema',
+        path: 'system',
         component: AppLayout,
         canActivate: [authGuard],
         children: [
@@ -22,8 +21,26 @@ export const appRoutes: Routes = [
                 path: '',
                 loadComponent: () => import('./app/pages/home/home').then(m => m.Home),
             },
-            // Aquí irán los demás módulos
-            // { path: 'inventario', loadChildren: () => import('./app/pages/inventario/inventario.routes') },
+            { 
+                path: 'inventory', 
+                loadChildren: () => import('./app/pages/inventory/inventory.routes') 
+            },
+            { 
+                path: 'pos', 
+                loadChildren: () => import('./app/pages/pos/pos.routes') 
+            },
+            { 
+                path: 'employees', 
+                loadChildren: () => import('./app/pages/employees/employees.routes') 
+            },
+            { 
+                path: 'my-business', 
+                loadChildren: () => import('./app/pages/my-business/my-business.routes') 
+            },
+            { 
+                path: 'rbac', 
+                loadChildren: () => import('./app/pages/rbac/rbac.routes') 
+            },
         ],
     },
 

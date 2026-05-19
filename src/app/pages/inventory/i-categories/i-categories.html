@@ -1,0 +1,117 @@
+<div class="flex flex-col gap-4">
+
+    <!-- Error -->
+    @if (error) {
+    <p-message severity="error" [text]="error" styleClass="w-full" />
+    }
+
+    <!-- Skeleton -->
+    @if (loading) {
+    <div class="flex flex-col gap-2">
+        <div class="flex justify-content-end mb-2">
+            <p-skeleton width="14rem" height="2rem" borderRadius="6px" />
+        </div>
+        @for (row of skeletonRows; track $index) {
+        <div class="flex align-items-center gap-3 py-2" style="border-bottom: 1px solid var(--surface-border);">
+            <p-skeleton width="40%" height="1rem" borderRadius="4px" />
+            <p-skeleton width="10%" height="1.5rem" borderRadius="12px" styleClass="ml-auto" />
+            <p-skeleton width="6rem" height="1.5rem" borderRadius="6px" />
+        </div>
+        }
+    </div>
+    }
+
+    <!-- Tabla -->
+    @if (!loading) {
+    <span class="text-muted-color text-sm">
+        {{ categoriasFiltradas.length }} de {{ categorias.length }} categorías
+    </span>
+    <p-table [value]="categoriasFiltradas" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10, 25, 50]"
+        [globalFilterFields]="['nombre']" dataKey="id" styleClass="p-datatable-sm" [tableStyle]="{ 'width': '100%' }"
+        #dt>
+
+        <ng-template pTemplate="caption">
+            <div class="flex align-items-center justify-content-between gap-3 flex-wrap">
+                <div class="flex align-items-center gap-3">
+                    <p-selectbutton [options]="filtroOpciones" [(ngModel)]="filtroActivo" optionLabel="label"
+                        optionValue="value" [allowEmpty]="false" size="small" />
+                    <p-iconfield>
+                        <p-inputicon styleClass="pi pi-search" />
+                        <input pInputText type="text" placeholder="Buscar categoría..."
+                            (input)="dt.filterGlobal($any($event.target).value, 'contains')" />
+                    </p-iconfield>
+                </div>
+                <div class="flex align-items-center gap-2 ml-auto">
+                    <div class="hidden md:flex gap-2">
+                        @if(authService.tienePermiso('gestionar_categorias')) {
+                        <p-button label="Nueva categoría" icon="pi pi-plus" size="small" (onClick)="openCreate()" />
+                        }
+                    </div>
+                </div>
+            </div>
+        </ng-template>
+
+        <ng-template pTemplate="header">
+            <tr>
+                <th pSortableColumn="nombre">Nombre <p-sortIcon field="nombre" /></th>
+                <th style="text-align:center">Estado</th>
+                <th style="text-align:center">Productos</th>
+                <th pFrozenColumn alignFrozen="right" style="text-align:center; min-width: 7rem;">Acciones</th>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-categoria>
+            <tr [ngClass]="{'opacity-50': !categoria.activo}">
+                <td class="font-medium" [ngClass]="{'text-muted-color': !categoria.activo}">
+                    {{ categoria.nombre }}
+                </td>
+                <td style="text-align:center">
+                    <i class="pi"
+                        [ngClass]="categoria.activo ? 'pi-check-circle text-green-500' : 'pi-times-circle text-red-400'">
+                    </i>
+                </td>
+                <td style="text-align:center">
+                    <p-tag [value]="(productosCount[categoria.id] ?? 0) + ''"
+                        [severity]="(productosCount[categoria.id] ?? 0) > 0 ? 'secondary' : 'warn'" [rounded]="true" />
+                </td>
+                <td pFrozenColumn alignFrozen="right" style="text-align:center; min-width: 7rem;">
+                    <div class="flex gap-1 justify-content-center">
+                        <p-button icon="pi pi-eye" severity="secondary" [text]="true" size="small"
+                            (onClick)="openDetail(categoria)" />
+                        @if(authService.tienePermiso('gestionar_categorias')) {
+                        <p-button icon="pi pi-pencil" severity="secondary" [text]="true" size="small"
+                            (onClick)="openEdit(categoria)" />
+                        }
+                        @if (categoria.activo) {
+                        @if(authService.tienePermiso('gestionar_categorias')) {
+                        <p-button icon="pi pi-trash" severity="danger" [text]="true" size="small"
+                            (onClick)="onDelete(categoria)" />
+                        }
+                        } @else {
+                        @if(authService.tienePermiso('gestionar_categorias')) {
+                        <p-button icon="pi pi-undo" severity="success" [text]="true" size="small" pTooltip="Reactivar"
+                            tooltipPosition="top" (onClick)="onReactivarCategoria(categoria)" />
+                        }
+                        }
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td colspan="4" class="text-center text-muted-color py-6">
+                    <i class="pi pi-tag text-4xl mb-3 block opacity-30"></i>
+                    No hay categorías {{ filtroActivo !== 'todos' ? filtroActivo : 'registradas' }}.
+                </td>
+            </tr>
+        </ng-template>
+
+    </p-table>
+    }
+
+</div>
+
+<!-- Modal crear/editar -->
+<app-i-cmodal [visible]="modalVisible" [categoria]="selectedCategoria" (closed)="onModalClosed()"
+    (saved)="onModalSaved($event)" />
