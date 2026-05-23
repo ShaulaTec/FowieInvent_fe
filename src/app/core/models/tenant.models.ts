@@ -1,3 +1,6 @@
+// ---------------------------------------------------------------------------
+// Plan
+// ---------------------------------------------------------------------------
 export interface Plan {
   id: string;
   nombre: string;
@@ -8,33 +11,49 @@ export interface Plan {
   activo: boolean;
 }
 
+// ---------------------------------------------------------------------------
+// Modulo
+// ---------------------------------------------------------------------------
 export interface Modulo {
   id: string;
   codigo: string;
   nombre: string;
+  label: string;
   descripcion: string;
+  icono: string;
+  ruta: string;
   precio_mensual: string;
   activo: boolean;
 }
+
+// ---------------------------------------------------------------------------
+// Tenant
+// ---------------------------------------------------------------------------
+export type TenantEstado = 'activo' | 'inactivo' | 'suspendido';
 
 export interface Tenant {
   id: string;
   plan: Plan;
   nombre_negocio: string;
   email_contacto: string;
-  estado: 'activo' | 'inactivo' | 'suspendido';
-  fecha_registro: string;
-  fecha_vencimiento: string;
+  estado: TenantEstado;
+  fecha_registro: string;       // ISO date: "YYYY-MM-DD"
+  fecha_vencimiento: string;    // ISO date: "YYYY-MM-DD"
 }
 
+// ---------------------------------------------------------------------------
+// TenantModulo
+// ---------------------------------------------------------------------------
 export interface TenantModulo {
-  id: number;
+  tenant: string;               // tenant_id (UUID)
   modulo: Modulo;
-  tenant: string;
-  fecha_activacion: string;
+  fecha_activacion: string;     // ISO date: "YYYY-MM-DD"
   activo: boolean;
 }
 
+// ---------------------------------------------------------------------------
+// DTOs
+// ---------------------------------------------------------------------------
 export interface UpdateTenantDto {
   nombre_negocio?: string;
   email_contacto?: string;
