@@ -88,7 +88,7 @@
     <span class="text-sm text-muted-color">No hay módulos contratados.</span>
     }
 
-    @for (tm of modulos; track tm.id; let last = $last) {
+    @for (tm of modulos; track tm.modulo.id; let last = $last) {
     <div class="flex align-items-center justify-content-between" [class.border-top-1]="!$first"
       [class.surface-border]="!$first" [class.pt-3]="!$first">
       <div class="flex align-items-center gap-3">
