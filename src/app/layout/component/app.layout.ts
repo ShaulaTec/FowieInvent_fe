@@ -8,7 +8,7 @@ import { AppSpeeddial } from './app.speeddial';
 import { AppFooter } from './app.footer';
 import { LayoutService } from '@/app/layout/service/layout.service';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { ToastModule } from 'primeng/toast';                                          // ← nuevo
+import { ToastModule } from 'primeng/toast';
 import { ReactivarProductosDialog } from '@/app/pages/inventory/i-categories/reactivar-productos-dialog/reactivar-productos-dialog';
 import { ConfirmInputDialog } from '@/app/shared/confirm-input-dialog';
 
@@ -17,7 +17,7 @@ import { ConfirmInputDialog } from '@/app/shared/confirm-input-dialog';
   standalone: true,
   imports: [
     CommonModule, AppTopbar, AppSidebar, AppSpeeddial,
-    RouterModule, AppFooter, ConfirmDialogModule, ToastModule,    // ← añade ToastModule
+    RouterModule, AppFooter, ConfirmDialogModule, ToastModule,
     ReactivarProductosDialog, ConfirmInputDialog,
   ],
   providers: [],
