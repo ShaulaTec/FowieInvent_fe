@@ -4,7 +4,7 @@ export interface Usuario {
   id: string;
   email: string;
   tenant: string;
-  rol: Rol;
+  rol: Rol | null;
   activo: boolean;
   ultimo_acceso: string | null;
 }
