@@ -2,12 +2,16 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, forkJoin, switchMap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Permiso, Rol, RolPermiso } from '../models/roles.models';
+import { Permiso, RbacStats, Rol, RolPermiso } from '../models/roles.models';
 
 @Injectable({ providedIn: 'root' })
 export class RolesService {
   private http = inject(HttpClient);
   private base = `${environment.apiUrl}/roles`;
+
+  getRbacStats(): Observable<RbacStats> {
+    return this.http.get<RbacStats>(`${this.base}/stats/`);
+  }
 
   getPermisos(): Observable<Permiso[]> {
     return this.http.get<Permiso[]>(`${this.base}/permisos/`);
@@ -66,7 +70,7 @@ export class RolesService {
   reemplazarPermisos(
     rolId: string,
     idsActuales: number[],
-    idsNuevos: string[]    
+    idsNuevos: string[]
   ): Observable<RolPermiso[]> {
     const revocaciones$ = idsActuales.length
       ? forkJoin(idsActuales.map((id) => this.revocarPermiso(id)))

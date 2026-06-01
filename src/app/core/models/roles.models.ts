@@ -35,3 +35,19 @@ export interface RolFormPayload {
   descripcion?: string;
   permiso_ids: string[];
 }
+
+export interface RbacStats {
+  totales: {
+    roles: number;
+    usuarios: number;
+    permisos: number;
+  };
+  roles: {
+    id: string;
+    nombre: string;
+    descripcion: string;
+    total_permisos: number;
+    total_usuarios: number;
+  }[];
+  usuarios_sin_rol: number;
+}

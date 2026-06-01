@@ -1,43 +1,116 @@
-<div class="flex flex-col gap-4 mt-4">
+<div class="flex flex-col gap-5">
 
     @if (error) {
     <p-message severity="error" [text]="error" styleClass="w-full" />
     }
 
+    <!-- Header -->
+    <div class="flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+            <h2 class="text-xl font-medium m-0">Dashboard de accesos</h2>
+            <span class="text-sm text-color-secondary">Roles, usuarios y permisos del tenant</span>
+        </div>
+        <p-button icon="pi pi-refresh" severity="secondary" [text]="true" size="small" [loading]="loading"
+            pTooltip="Actualizar" (onClick)="cargar()" />
+    </div>
+
+    <!-- Skeleton -->
     @if (loading) {
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="grid gap-3" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr))">
         @for (i of [1,2,3]; track i) {
-        <p-skeleton height="7rem" borderRadius="12px" />
+        <p-skeleton height="6rem" borderRadius="12px" />
         }
     </div>
+    <p-skeleton height="14rem" borderRadius="12px" />
     }
 
-    @if (!loading && !error) {
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    @if (!loading && stats) {
 
-        <div class="p-4 border border-surface-200 dark:border-surface-700 rounded-xl flex flex-col gap-1">
-            <span class="text-muted-color text-sm">Roles activos</span>
-            <span class="text-4xl font-bold text-surface-900 dark:text-surface-0">{{ totalRoles }}</span>
-            <a routerLink="../roles" class="text-primary text-sm mt-2 hover:underline cursor-pointer">
+    <!-- Cards -->
+    <div class="grid gap-3" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr))">
+
+        <div class="border-round-xl p-4 flex flex-col gap-1"
+            style="border: 0.5px solid var(--p-content-border-color); background: var(--p-content-background)">
+            <span class="text-xs text-color-secondary uppercase font-medium">Roles activos</span>
+            <span class="text-3xl font-medium text-primary">{{ stats.totales.roles }}</span>
+            <a routerLink="../roles" class="text-xs text-primary hover:underline cursor-pointer mt-1">
                 Ver roles →
             </a>
         </div>
 
-        <div class="p-4 border border-surface-200 dark:border-surface-700 rounded-xl flex flex-col gap-1">
-            <span class="text-muted-color text-sm">Usuarios activos</span>
-            <span class="text-4xl font-bold text-surface-900 dark:text-surface-0">{{ totalUsuarios }}</span>
-            <a routerLink="../users" class="text-primary text-sm mt-2 hover:underline cursor-pointer">
+        <div class="border-round-xl p-4 flex flex-col gap-1"
+            style="border: 0.5px solid var(--p-content-border-color); background: var(--p-content-background)">
+            <span class="text-xs text-color-secondary uppercase font-medium">Usuarios activos</span>
+            <span class="text-3xl font-medium text-primary">{{ stats.totales.usuarios }}</span>
+            @if (stats.usuarios_sin_rol > 0) {
+            <span class="text-xs text-orange-400">{{ stats.usuarios_sin_rol }} sin rol asignado</span>
+            } @else {
+            <a routerLink="../users" class="text-xs text-primary hover:underline cursor-pointer mt-1">
                 Ver usuarios →
             </a>
+            }
         </div>
 
-        <div class="p-4 border border-surface-200 dark:border-surface-700 rounded-xl flex flex-col gap-1">
-            <span class="text-muted-color text-sm">Permisos disponibles</span>
-            <span class="text-4xl font-bold text-surface-900 dark:text-surface-0">{{ totalPermisos }}</span>
-            <span class="text-muted-color text-xs mt-2">Filtrados por módulos activos del tenant</span>
+        <div class="border-round-xl p-4 flex flex-col gap-1"
+            style="border: 0.5px solid var(--p-content-border-color); background: var(--p-content-background)">
+            <span class="text-xs text-color-secondary uppercase font-medium">Permisos disponibles</span>
+            <span class="text-3xl font-medium text-primary">{{ stats.totales.permisos }}</span>
+            <span class="text-xs text-color-secondary mt-1">Módulos activos del tenant</span>
         </div>
 
     </div>
+
+    <!-- Tabla distribución -->
+    <div class="border-round-xl p-4"
+        style="border: 0.5px solid var(--p-content-border-color); background: var(--p-content-background)">
+
+        <div class="flex align-items-center justify-content-between mb-3">
+            <div>
+                <span class="font-medium block">Distribución por rol</span>
+                <span class="text-xs text-color-secondary">Usuarios y permisos asignados a cada rol</span>
+            </div>
+            <a routerLink="../roles" class="text-xs text-primary hover:underline cursor-pointer">
+                Gestionar roles →
+            </a>
+        </div>
+
+        <p-table [value]="stats.roles" [stripedRows]="true" size="small" styleClass="p-datatable-sm"
+            [tableStyle]="{ width: '100%' }">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>Rol</th>
+                    <th class="hidden md:table-cell">Descripción</th>
+                    <th style="text-align:center">Usuarios</th>
+                    <th style="text-align:center">Permisos</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-rol>
+                <tr>
+                    <td class="font-medium">{{ rol.nombre }}</td>
+                    <td class="hidden md:table-cell text-sm text-color-secondary">
+                        {{ rol.descripcion || '—' }}
+                    </td>
+                    <td style="text-align:center">
+                        <p-tag [value]="rol.total_usuarios + ''"
+                            [severity]="rol.total_usuarios > 0 ? 'success' : 'secondary'" />
+                    </td>
+                    <td style="text-align:center">
+                        <p-tag [value]="rol.total_permisos + ''" severity="secondary" />
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="4" class="text-center text-color-secondary py-5">
+                        <i class="pi pi-shield text-3xl block mb-2 opacity-30"></i>
+                        No hay roles registrados.
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+
+    </div>
+
     }
 
 </div>

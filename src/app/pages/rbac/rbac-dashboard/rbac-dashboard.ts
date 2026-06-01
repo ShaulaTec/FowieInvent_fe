@@ -1,47 +1,37 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { CardModule } from 'primeng/card';
 import { SkeletonModule } from 'primeng/skeleton';
 import { MessageModule } from 'primeng/message';
 import { ButtonModule } from 'primeng/button';
-import { forkJoin } from 'rxjs';
+import { TableModule } from 'primeng/table';
+import { TagModule } from 'primeng/tag';
 import { RolesService } from '@/app/core/service/roles.service';
-import { UsuariosService } from '@/app/core/service/users.service';
+import { RbacStats } from '@/app/core/models/roles.models';
 
 @Component({
   selector: 'app-rbac-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, CardModule, SkeletonModule, MessageModule, ButtonModule],
+  imports: [CommonModule, RouterModule, SkeletonModule, MessageModule, ButtonModule, TableModule, TagModule],
   templateUrl: './rbac-dashboard.html',
 })
 export class RbacDashboard implements OnInit {
   private rolesService = inject(RolesService);
-  private usuariosService = inject(UsuariosService);
+  private cdr = inject(ChangeDetectorRef);
 
   loading = true;
   error: string | null = null;
+  stats: RbacStats | null = null;
 
-  totalRoles = 0;
-  totalUsuarios = 0;
-  totalPermisos = 0;
+  ngOnInit() { this.cargar(); }
 
-  ngOnInit() {
-    forkJoin({
-      roles: this.rolesService.getRoles(),
-      usuarios: this.usuariosService.getUsuarios(),
-      permisos: this.rolesService.getPermisos(),
-    }).subscribe({
-      next: ({ roles, usuarios, permisos }) => {
-        this.totalRoles = roles.length;
-        this.totalUsuarios = usuarios.length;
-        this.totalPermisos = permisos.length;
-        this.loading = false;
-      },
-      error: () => {
-        this.error = 'No se pudieron cargar los datos.';
-        this.loading = false;
-      },
+  cargar() {
+    this.loading = true;
+    this.stats = null;
+    this.error = null;
+    this.rolesService.getRbacStats().subscribe({
+      next: (s) => { this.stats = s; this.loading = false; this.cdr.detectChanges(); },
+      error: () => { this.error = 'No se pudieron cargar los datos.'; this.loading = false; this.cdr.detectChanges(); },
     });
   }
 }
