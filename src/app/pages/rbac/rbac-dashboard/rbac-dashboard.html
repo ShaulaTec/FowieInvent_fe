@@ -1,1 +1,43 @@
-<p>rbac-dashboard workss!</p>
+<div class="flex flex-col gap-4 mt-4">
+
+    @if (error) {
+    <p-message severity="error" [text]="error" styleClass="w-full" />
+    }
+
+    @if (loading) {
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        @for (i of [1,2,3]; track i) {
+        <p-skeleton height="7rem" borderRadius="12px" />
+        }
+    </div>
+    }
+
+    @if (!loading && !error) {
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+        <div class="p-4 border border-surface-200 dark:border-surface-700 rounded-xl flex flex-col gap-1">
+            <span class="text-muted-color text-sm">Roles activos</span>
+            <span class="text-4xl font-bold text-surface-900 dark:text-surface-0">{{ totalRoles }}</span>
+            <a routerLink="../roles" class="text-primary text-sm mt-2 hover:underline cursor-pointer">
+                Ver roles →
+            </a>
+        </div>
+
+        <div class="p-4 border border-surface-200 dark:border-surface-700 rounded-xl flex flex-col gap-1">
+            <span class="text-muted-color text-sm">Usuarios activos</span>
+            <span class="text-4xl font-bold text-surface-900 dark:text-surface-0">{{ totalUsuarios }}</span>
+            <a routerLink="../users" class="text-primary text-sm mt-2 hover:underline cursor-pointer">
+                Ver usuarios →
+            </a>
+        </div>
+
+        <div class="p-4 border border-surface-200 dark:border-surface-700 rounded-xl flex flex-col gap-1">
+            <span class="text-muted-color text-sm">Permisos disponibles</span>
+            <span class="text-4xl font-bold text-surface-900 dark:text-surface-0">{{ totalPermisos }}</span>
+            <span class="text-muted-color text-xs mt-2">Filtrados por módulos activos del tenant</span>
+        </div>
+
+    </div>
+    }
+
+</div>

@@ -1,0 +1,79 @@
+<p-dialog [visible]="visible" (visibleChange)="!$event && close()"
+    [header]="mode === 'rol' ? (rol ? 'Editar rol' : 'Nuevo rol') : (usuario ? 'Editar usuario' : 'Nuevo usuario')"
+    [modal]="true" [draggable]="false" [style]="{ width: mode === 'rol' ? '42rem' : '32rem' }" styleClass="p-fluid">
+
+    @if (error) {
+    <p-message severity="error" [text]="error" styleClass="w-full mb-3" />
+    }
+
+    <!-- ── FORM ROL ─────────────────────────────────────────── -->
+    @if (mode === 'rol') {
+    <div class="flex flex-col gap-4">
+
+        <div class="flex flex-col gap-1">
+            <label class="font-medium text-sm">Nombre <span class="text-red-500">*</span></label>
+            <input pInputText [(ngModel)]="rolNombre" placeholder="Ej. Administrador" />
+        </div>
+
+        <div class="flex flex-col gap-1">
+            <label class="font-medium text-sm">Descripción</label>
+            <textarea pTextarea [(ngModel)]="rolDescripcion" rows="2"
+                placeholder="Descripción opcional del rol"></textarea>
+        </div>
+
+        <div class="flex flex-col gap-2">
+            <label class="font-medium text-sm">Permisos</label>
+            @for (grupo of permisosAgrupados; track grupo.modulo) {
+            <div class="border border-surface-200 dark:border-surface-700 rounded-lg p-3">
+                <p class="font-semibold text-sm text-surface-700 dark:text-surface-200 mb-2 m-0">
+                    {{ grupo.modulo }}
+                </p>
+                <div class="flex flex-wrap gap-3">
+                    @for (permiso of grupo.permisos; track permiso.id) {
+                    <div class="flex align-items-center gap-2">
+                        <p-checkbox [binary]="true" [ngModel]="tienePermiso(permiso.id)"
+                            (ngModelChange)="togglePermiso(permiso.id)" [inputId]="permiso.id" />
+                        <label [for]="permiso.id" class="text-sm cursor-pointer">
+                            {{ permiso.descripcion }}
+                        </label>
+                    </div>
+                    }
+                </div>
+            </div>
+            }
+        </div>
+
+    </div>
+    }
+
+    <!-- ── FORM USUARIO ──────────────────────────────────────── -->
+    @if (mode === 'usuario') {
+    <div class="flex flex-col gap-4">
+
+        <div class="flex flex-col gap-1">
+            <label class="font-medium text-sm">Email <span class="text-red-500">*</span></label>
+            <input pInputText type="email" [(ngModel)]="usuarioEmail" placeholder="usuario@ejemplo.com" />
+        </div>
+
+        @if (!usuario) {
+        <div class="flex flex-col gap-1">
+            <label class="font-medium text-sm">Contraseña <span class="text-red-500">*</span></label>
+            <input pInputText type="password" [(ngModel)]="usuarioPassword" placeholder="Mínimo 8 caracteres" />
+        </div>
+        }
+
+        <div class="flex flex-col gap-1">
+            <label class="font-medium text-sm">Rol <span class="text-red-500">*</span></label>
+            <p-select [options]="rolesDisponibles" [(ngModel)]="usuarioRolId" optionLabel="nombre" optionValue="id"
+                placeholder="Selecciona un rol" />
+        </div>
+
+    </div>
+    }
+
+    <ng-template pTemplate="footer">
+        <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="close()" [disabled]="saving" />
+        <p-button [label]="saving ? 'Guardando...' : 'Guardar'" [loading]="saving" (onClick)="submit()" />
+    </ng-template>
+
+</p-dialog>
