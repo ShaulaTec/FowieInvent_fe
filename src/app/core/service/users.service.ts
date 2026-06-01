@@ -7,7 +7,7 @@ import { Usuario, UsuarioCreate, UsuarioUpdate, UsuarioMe } from '../models/user
 @Injectable({ providedIn: 'root' })
 export class UsuariosService {
   private http = inject(HttpClient);
-  private base = `${environment.apiUrl}/api/users`;
+  private base = `${environment.apiUrl}/users`;
 
   getUsuarios(): Observable<Usuario[]> {
     return this.http.get<Usuario[]>(`${this.base}/usuarios/`);

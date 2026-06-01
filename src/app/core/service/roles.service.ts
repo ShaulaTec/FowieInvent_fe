@@ -7,7 +7,7 @@ import { Permiso, Rol, RolPermiso } from '../models/roles.models';
 @Injectable({ providedIn: 'root' })
 export class RolesService {
   private http = inject(HttpClient);
-  private base = `${environment.apiUrl}/api/roles`;
+  private base = `${environment.apiUrl}/roles`;
 
   getPermisos(): Observable<Permiso[]> {
     return this.http.get<Permiso[]>(`${this.base}/permisos/`);
