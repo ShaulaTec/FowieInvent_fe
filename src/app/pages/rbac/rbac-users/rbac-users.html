@@ -1,1 +1,107 @@
-<p>rbac-users works!</p>
+<div class="flex flex-col gap-4">
+
+    @if (error) {
+    <p-message severity="error" [text]="error" styleClass="w-full" />
+    }
+
+    @if (loading) {
+    <div class="flex flex-col gap-2">
+        <div class="flex justify-content-end mb-2">
+            <p-skeleton width="10rem" height="2rem" borderRadius="6px" />
+        </div>
+        @for (row of skeletonRows; track $index) {
+        <div class="flex align-items-center gap-3 py-2" style="border-bottom: 1px solid var(--surface-border);">
+            <p-skeleton width="30%" height="1rem" borderRadius="4px" />
+            <p-skeleton width="15%" height="1rem" borderRadius="4px" class="hidden md:block" />
+            <p-skeleton width="10%" height="1rem" borderRadius="4px" class="hidden md:block" />
+            <p-skeleton width="8rem" height="1.5rem" borderRadius="12px" styleClass="ml-auto" />
+            <p-skeleton width="6rem" height="1.5rem" borderRadius="6px" />
+        </div>
+        }
+    </div>
+    }
+
+    @if (!loading) {
+    <span class="text-muted-color text-sm">{{ usuarios.length }} usuarios</span>
+    <p-table [value]="usuarios" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10, 25, 50]"
+        [globalFilterFields]="['email', 'rol.nombre']" dataKey="id" styleClass="p-datatable-sm"
+        [tableStyle]="{ width: '100%' }" [scrollable]="true" scrollHeight="flex" #dt>
+
+        <ng-template pTemplate="caption">
+            <div class="flex align-items-center justify-content-between gap-3 flex-wrap">
+                <p-iconfield>
+                    <p-inputicon styleClass="pi pi-search" />
+                    <input pInputText type="text" placeholder="Buscar usuario..."
+                        (input)="dt.filterGlobal($any($event.target).value, 'contains')" />
+                </p-iconfield>
+                <div class="flex align-items-center gap-2 ml-auto">
+                    @if (authService.tienePermiso('gestionar_usuarios')) {
+                    <p-button label="Nuevo usuario" icon="pi pi-plus" size="small" (onClick)="openCreate()" />
+                    }
+                </div>
+            </div>
+        </ng-template>
+
+        <ng-template pTemplate="header">
+            <tr>
+                <th pSortableColumn="email">Email <p-sortIcon field="email" /></th>
+                <th pSortableColumn="rol.nombre" class="hidden md:table-cell">
+                    Rol <p-sortIcon field="rol.nombre" />
+                </th>
+                <th style="text-align:center">Estado</th>
+                <th class="hidden md:table-cell" style="text-align:center">Último acceso</th>
+                <th pFrozenColumn alignFrozen="right" style="text-align:center; min-width: 7rem;">Acciones</th>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-usuario>
+            <tr [ngClass]="{'opacity-50': !usuario.activo}">
+                <td class="font-medium" [ngClass]="{'text-muted-color': !usuario.activo}">
+                    {{ usuario.email }}
+                </td>
+                <td class="hidden md:table-cell">
+                    <span class="text-sm px-2 py-1 border-round"
+                        style="background: var(--surface-100); border: 1px solid var(--surface-border);">
+                        {{ usuario.rol?.nombre ?? '—' }}
+                    </span>
+                </td>
+                <td style="text-align:center">
+                    <p-tag [value]="usuario.activo ? 'Activo' : 'Inactivo'"
+                        [severity]="usuario.activo ? 'success' : 'danger'" />
+                </td>
+                <td class="hidden md:table-cell text-muted-color text-sm" style="text-align:center">
+                    {{ usuario.ultimo_acceso ? (usuario.ultimo_acceso | date:'dd/MM/yy HH:mm') : '—' }}
+                </td>
+                <td pFrozenColumn alignFrozen="right" style="text-align:center; min-width: 7rem;">
+                    <div class="flex gap-1 justify-content-center">
+                        @if (authService.tienePermiso('gestionar_usuarios')) {
+                        <p-button icon="pi pi-eye" severity="secondary" [text]="true" size="small"
+                            pTooltip="Ver detalle" tooltipPosition="top" (onClick)="openDetail(usuario)" />
+                        <p-button icon="pi pi-pencil" severity="secondary" [text]="true" size="small" pTooltip="Editar"
+                            tooltipPosition="top" (onClick)="openEdit(usuario)" />
+                        @if (usuario.activo) {
+                        <p-button icon="pi pi-ban" severity="danger" [text]="true" size="small" pTooltip="Desactivar"
+                            tooltipPosition="top" (onClick)="onDesactivar(usuario)" />
+                        }
+                        }
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td colspan="5" class="text-center text-muted-color py-6">
+                    <i class="pi pi-users text-4xl mb-3 block opacity-30"></i>
+                    No hay usuarios registrados.
+                </td>
+            </tr>
+        </ng-template>
+
+    </p-table>
+    }
+
+</div>
+
+<app-rbac-modal [visible]="modalVisible" mode="usuario" [usuario]="selectedUsuario" (closed)="onModalClosed()"
+    (savedUsuario)="onModalSaved($event)" />
