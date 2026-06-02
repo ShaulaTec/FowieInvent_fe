@@ -80,8 +80,11 @@
                         <p-button icon="pi pi-pencil" severity="secondary" [text]="true" size="small" pTooltip="Editar"
                             tooltipPosition="top" (onClick)="openEdit(usuario)" />
                         @if (usuario.activo) {
+                        @if (usuario.activo) {
                         <p-button icon="pi pi-ban" severity="danger" [text]="true" size="small" pTooltip="Desactivar"
-                            tooltipPosition="top" (onClick)="onDesactivar(usuario)" />
+                            tooltipPosition="top" [disabled]="usuario.id === authService.currentUser()?.id"
+                            (onClick)="onDesactivar(usuario)" />
+                        }
                         }
                         }
                     </div>
