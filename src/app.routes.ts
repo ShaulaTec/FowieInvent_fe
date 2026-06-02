@@ -5,13 +5,11 @@ import { Notfound } from './app/pages/notfound/notfound';
 import { authGuard } from './app/core/guards/auth.guard';
 
 export const appRoutes: Routes = [
-    // ── Pública: landing ─────────────────────────────────────────────────────
     {
         path: '',
         component: Landing,
     },
 
-    // ── Autenticada: sistema ──────────────────────────────────────────────────
     {
         path: 'system',
         component: AppLayout,
@@ -44,13 +42,11 @@ export const appRoutes: Routes = [
         ],
     },
 
-    // ── Auth ──────────────────────────────────────────────────────────────────
     {
         path: 'auth',
         loadChildren: () => import('./app/pages/auth/auth.routes'),
     },
 
-    // ── Fallback ──────────────────────────────────────────────────────────────
     { path: 'notfound', component: Notfound },
     { path: '**', redirectTo: '/notfound' },
 ];

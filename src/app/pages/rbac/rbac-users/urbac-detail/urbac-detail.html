@@ -1,0 +1,151 @@
+<div class="flex flex-col gap-4">
+
+    @if (error) {
+    <p-message severity="error" [text]="error" styleClass="w-full" />
+    }
+
+    <!-- Skeleton -->
+    @if (loading) {
+    <div class="flex flex-col gap-4">
+        <p-skeleton width="40%" height="2rem" borderRadius="6px" />
+        <p-skeleton width="20%" height="1rem" borderRadius="4px" />
+        <p-divider />
+        <div class="grid">
+            @for (i of [1,2,3,4,5,6]; track i) {
+            <div class="col-12 md:col-6 flex flex-col gap-1 mb-3">
+                <p-skeleton width="6rem" height="0.75rem" borderRadius="4px" />
+                <p-skeleton width="60%" height="1.25rem" borderRadius="4px" />
+            </div>
+            }
+        </div>
+    </div>
+    }
+
+    <!-- Contenido -->
+    @if (!loading && usuario) {
+
+    <!-- Header -->
+    <div class="flex flex-col gap-1">
+        <div class="flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="flex align-items-center gap-2">
+                <p-button icon="pi pi-arrow-left" severity="secondary" [text]="true" size="small" pTooltip="Volver"
+                    tooltipPosition="top" (onClick)="goBack()" />
+                <h2 class="text-2xl font-bold m-0">{{ usuario.email }}</h2>
+            </div>
+            <div class="flex align-items-center gap-2">
+                @if (authService.tienePermiso('gestionar_usuarios')) {
+                <p-button label="Editar" icon="pi pi-pencil" size="small" (onClick)="openEdit()" />
+                @if (usuario.activo) {
+                <p-button label="Desactivar" icon="pi pi-ban" severity="danger" [outlined]="true" size="small"
+                    (onClick)="onDesactivar()" />
+                }
+                }
+            </div>
+        </div>
+        <div class="flex align-items-center gap-2 mt-1 ml-5">
+            <p-tag [value]="usuario.activo ? 'Activo' : 'Inactivo'"
+                [severity]="usuario.activo ? 'success' : 'danger'" />
+            @if (usuario.ultimo_acceso) {
+            <span class="text-muted-color text-sm">
+                Último acceso {{ usuario.ultimo_acceso | date:'dd/MM/yyyy HH:mm' }}
+            </span>
+            } @else {
+            <span class="text-muted-color text-sm">Sin accesos registrados</span>
+            }
+        </div>
+    </div>
+
+    <p-divider />
+
+    <!-- Grid de campos -->
+    <div class="grid">
+
+        <div class="col-12 md:col-6 flex flex-col gap-1 mb-3">
+            <span class="text-xs text-muted-color font-medium uppercase" style="letter-spacing: 0.05em;">
+                Email
+            </span>
+            <span class="font-medium">{{ usuario.email }}</span>
+        </div>
+
+        <div class="col-12 md:col-6 flex flex-col gap-1 mb-3">
+            <span class="text-xs text-muted-color font-medium uppercase" style="letter-spacing: 0.05em;">
+                Rol
+            </span>
+            <span class="font-medium">{{ usuario.rol?.nombre ?? '—' }}</span>
+        </div>
+
+        <div class="col-12 md:col-6 flex flex-col gap-1 mb-3">
+            <span class="text-xs text-muted-color font-medium uppercase" style="letter-spacing: 0.05em;">
+                Estado
+            </span>
+            <div class="flex align-items-center gap-2">
+                <i class="pi"
+                    [ngClass]="usuario.activo ? 'pi-check-circle text-green-500' : 'pi-times-circle text-red-400'"></i>
+                <span class="font-medium">{{ usuario.activo ? 'Activo' : 'Inactivo' }}</span>
+            </div>
+        </div>
+
+        <div class="col-12 md:col-6 flex flex-col gap-1 mb-3">
+            <span class="text-xs text-muted-color font-medium uppercase" style="letter-spacing: 0.05em;">
+                ID
+            </span>
+            <span class="text-muted-color text-sm font-mono">{{ usuario.id }}</span>
+        </div>
+
+    </div>
+
+    <p-divider />
+
+    <!-- Permisos del rol -->
+    <div class="flex flex-col gap-3">
+        <div class="flex align-items-center justify-content-between">
+            <span class="text-xs text-muted-color font-medium uppercase" style="letter-spacing: 0.05em;">
+                Permisos del rol — {{ usuario.rol?.nombre }}
+            </span>
+            <p-tag [value]="(usuario.rol?.permisos?.length ?? 0) + ' permisos'" severity="secondary" />
+        </div>
+
+        @if (permisosAgrupados.length === 0) {
+        <div class="flex flex-col align-items-center gap-2 py-5 text-muted-color">
+            <i class="pi pi-lock text-4xl"></i>
+            <span class="text-sm">Este rol no tiene permisos asignados.</span>
+        </div>
+        } @else {
+        <div class="flex flex-col gap-3">
+            @for (grupo of permisosAgrupados; track grupo.modulo) {
+            <div class="border border-surface-200 dark:border-surface-700 rounded-lg p-3">
+                <div class="flex align-items-center gap-2 mb-2">
+                    <i class="text-sm" [ngClass]="grupo.icono"></i>
+                    <span class="font-semibold text-sm">{{ grupo.modulo }}</span>
+                    <p-tag [value]="grupo.permisos.length + ''" severity="secondary" styleClass="text-xs ml-auto" />
+                </div>
+                <p-table [value]="grupo.permisos" [stripedRows]="true" size="small">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th>Permiso</th>
+                            <th class="hidden md:table-cell text-muted-color" style="font-weight: 400;">Código</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-permiso>
+                        <tr>
+                            <td class="text-sm">{{ permiso.descripcion }}</td>
+                            <td class="hidden md:table-cell text-muted-color text-xs font-mono">
+                                {{ permiso.codigo }}
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+            }
+        </div>
+        }
+    </div>
+
+    }
+
+</div>
+
+@if (usuario) {
+<app-rbac-modal [visible]="modalVisible" mode="usuario" [usuario]="usuario" (closed)="onModalClosed()"
+    (savedUsuario)="onModalSaved($event)" />
+}

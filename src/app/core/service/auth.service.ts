@@ -7,7 +7,6 @@ import { environment } from '../../../environments/environment';
 import { LoginRequest, RegisterRequest, AuthTokens, AuthUser, AuthResponse, PermisoNav } from '../models/auth.models';
 import { NavItem } from '@/app/layout/component/app.nav';
 
-// ── Service ───────────────────────────────────────────────────────────────────
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -16,7 +15,6 @@ export class AuthService {
     private readonly REFRESH_KEY = 'fi_refresh';
     private readonly USER_KEY = 'fi_user';
 
-    // Signal reactivo — los componentes pueden leer `currentUser()` directamente
     private _currentUser = signal<AuthUser | null>(this.loadUser());
     readonly currentUser = this._currentUser.asReadonly();
     readonly isLoggedIn = computed(() => !!this._currentUser());
@@ -35,7 +33,6 @@ export class AuthService {
         );
     }
 
-    // ── Login ─────────────────────────────────────────────────────────────────
 
     login(credentials: LoginRequest): Observable<AuthResponse> {
         return this.http
@@ -46,7 +43,6 @@ export class AuthService {
             );
     }
 
-    // ── Register ──────────────────────────────────────────────────────────────
 
     register(data: RegisterRequest): Observable<AuthResponse> {
         return this.http
@@ -57,7 +53,6 @@ export class AuthService {
             );
     }
 
-    // ── Refresh ───────────────────────────────────────────────────────────────
 
     refreshToken(): Observable<AuthTokens> {
         const refresh = this.getRefreshToken();
@@ -72,14 +67,12 @@ export class AuthService {
             );
     }
 
-    // ── Logout ────────────────────────────────────────────────────────────────
 
     logout(): void {
         this.clearSession();
         this.router.navigate(['/auth/login']);
     }
 
-    // ── Token helpers ─────────────────────────────────────────────────────────
 
     getAccessToken(): string | null {
         return localStorage.getItem(this.ACCESS_KEY);
@@ -131,11 +124,8 @@ export class AuthService {
     tienePermiso(codigo: string): boolean {
         const user = this._currentUser();
         if (!user) return false;
-        if (user.rol === 'Owner') return true;
         return user.permisos?.some(p => p.codigo === codigo) ?? false;
     }
-
-    // ── Private ───────────────────────────────────────────────────────────────
 
     private saveSession(res: AuthResponse): void {
         localStorage.setItem(this.ACCESS_KEY, res.access);
@@ -164,10 +154,8 @@ export class AuthService {
 
     private parseError(err: any): string {
         if (err?.error) {
-            // SimpleJWT devuelve { detail: '...' } o { field: ['msg'] }
             if (typeof err.error === 'string') return err.error;
             if (err.error.detail) return err.error.detail;
-            // Toma el primer mensaje de validación del serializer
             const first = Object.values(err.error)[0];
             if (Array.isArray(first)) return first[0] as string;
         }
