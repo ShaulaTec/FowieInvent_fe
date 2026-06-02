@@ -73,4 +73,8 @@ export class RbacRoles implements OnInit {
       },
     });
   }
+
+  esOwner(rol: Rol): boolean {
+    return rol.nombre === 'Owner';
+  }
 }
