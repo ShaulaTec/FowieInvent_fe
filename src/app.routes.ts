@@ -39,6 +39,10 @@ export const appRoutes: Routes = [
                 path: 'rbac', 
                 loadChildren: () => import('./app/pages/rbac/rbac.routes') 
             },
+            {
+                path: 'support',
+                loadComponent: () => import('./app/pages/support/support').then(m => m.Support)
+            }
         ],
     },
 
