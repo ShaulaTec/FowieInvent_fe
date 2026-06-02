@@ -1,37 +1,41 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { MenuItem } from 'primeng/api';
 import { AppMenuitem } from './app.menuitem';
 import { AuthService } from '@/app/core/service/auth.service';
+
+interface MenuSection {
+    label?: string;
+    separator?: boolean;
+    items?: { label: string; icon: string; routerLink: string[] }[];
+}
 
 @Component({
     selector: 'app-menu',
     standalone: true,
     imports: [CommonModule, AppMenuitem, RouterModule],
     template: `<ul class="layout-menu">
-        @for (item of model; track item.label) {
-            @if (!item.separator) {
-                <li app-menuitem [item]="item" [root]="true"></li>
-            } @else {
-                <li class="menu-separator"></li>
-            }
-        }
-    </ul>`,
+    @for (item of model(); track item.label) {
+      @if (!item.separator) {
+        <li app-menuitem [item]="item" [root]="true"></li>
+      } @else {
+        <li class="menu-separator"></li>
+      }
+    }
+  </ul>`,
 })
-export class AppMenu implements OnInit {
+export class AppMenu {
     authService = inject(AuthService);
-    model: MenuItem[] = [];
 
-    ngOnInit() {
+    model = computed<MenuSection[]>(() => {
         const tiene = (codigo: string) => this.authService.tienePermiso(codigo);
 
-        this.model = [
+        return [
             {
                 label: 'General',
                 items: [
                     { label: 'Inicio', icon: 'pi pi-fw pi-home', routerLink: ['/system'] },
-                ]
+                ],
             },
             {
                 label: 'Módulos',
@@ -39,21 +43,25 @@ export class AppMenu implements OnInit {
                     ...(tiene('ver_inventario') ? [{
                         label: 'Inventario',
                         icon: 'pi pi-fw pi-box',
-                        routerLink: ['/system/inventory']
+                        routerLink: ['/system/inventory'],
                     }] : []),
-                ]
+                ],
             },
             {
                 label: 'Configuración',
                 items: [
-                    ...(tiene('ver_mi_negocio') || tiene('editar_mi_negocio') ? [
-                        { label: 'Mi negocio', icon: 'pi pi-fw pi-building', routerLink: ['/system/my-business'] }
-                    ] : []),
-                    ...(tiene('ver_rbac') || tiene('gestionar_usuarios') || tiene('gestionar_roles') ? [
-                        { label: 'Usuarios y roles', icon: 'pi pi-fw pi-shield', routerLink: ['/system/rbac'] }
-                    ] : []),
-                ]
+                    ...(tiene('ver_mi_negocio') || tiene('editar_mi_negocio') ? [{
+                        label: 'Mi negocio',
+                        icon: 'pi pi-fw pi-building',
+                        routerLink: ['/system/my-business'],
+                    }] : []),
+                    ...(tiene('ver_rbac') || tiene('gestionar_usuarios') || tiene('gestionar_roles') ? [{
+                        label: 'Usuarios y roles',
+                        icon: 'pi pi-fw pi-shield',
+                        routerLink: ['/system/rbac'],
+                    }] : []),
+                ],
             },
         ].filter(section => section.items && section.items.length > 0);
-    }
+    });
 }
