@@ -124,10 +124,8 @@ export class AuthService {
     tienePermiso(codigo: string): boolean {
         const user = this._currentUser();
         if (!user) return false;
-        if (user.rol === 'Owner') return true;
         return user.permisos?.some(p => p.codigo === codigo) ?? false;
     }
-
 
     private saveSession(res: AuthResponse): void {
         localStorage.setItem(this.ACCESS_KEY, res.access);
