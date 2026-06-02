@@ -63,7 +63,7 @@ export class RbacRoles implements OnInit {
   }
 
   onDelete(rol: Rol) {
-    this.confirmService.delete({
+    this.confirmService.deleteWithInput({
       nombre: rol.nombre,
       onAccept: () => {
         this.rolesService.eliminarRol(rol.id).subscribe({
