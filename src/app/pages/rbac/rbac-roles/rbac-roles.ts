@@ -14,6 +14,7 @@ import { ConfirmService } from '@/app/core/service/confirm.service';
 import { AuthService } from '@/app/core/service/auth.service';
 import { Rol } from '@/app/core/models/roles.models';
 import { RbacModal } from '../rbac-modal/rbac-modal';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-rbac-roles',
@@ -31,6 +32,7 @@ export class RbacRoles implements OnInit {
   private rolesService = inject(RolesService);
   private confirmService = inject(ConfirmService);
   private cdr = inject(ChangeDetectorRef);
+  private router = inject(Router);
 
   roles: Rol[] = [];
   loading = true;
@@ -72,6 +74,10 @@ export class RbacRoles implements OnInit {
         });
       },
     });
+  }
+
+  openDetail(rol: Rol) {
+    this.router.navigate(['/system/rbac/roles', rol.id], { state: { rol } });
   }
 
   esOwner(rol: Rol): boolean {

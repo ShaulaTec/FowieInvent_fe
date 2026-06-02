@@ -23,6 +23,7 @@ export interface Rol {
   descripcion: string;
   activo: boolean;
   permisos: Permiso[];
+  total_usuarios: number;
 }
 
 export interface RolPermiso {
