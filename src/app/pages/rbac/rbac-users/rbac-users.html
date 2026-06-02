@@ -58,12 +58,23 @@
             <tr [ngClass]="{'opacity-50': !usuario.activo}">
                 <td class="font-medium" [ngClass]="{'text-muted-color': !usuario.activo}">
                     {{ usuario.email }}
+                    @if (!usuario.rol) {
+                    <div class="flex align-items-center gap-1 mt-1">
+                        <i class="pi pi-exclamation-triangle text-xs text-orange-500"></i>
+                        <span class="text-xs text-orange-500 font-medium">Sin rol asociado</span>
+                    </div>
+                    }
                 </td>
                 <td class="hidden md:table-cell">
-                    <span class="text-sm px-2 py-1 border-round"
-                        style="background: var(--surface-100); border: 1px solid var(--surface-border);">
-                        {{ usuario.rol?.nombre ?? '—' }}
+                    @if (usuario.rol) {
+                    <span class="text-sm px-2 py-1 border-round">
+                        {{ usuario.rol.nombre }}
                     </span>
+                    } @else {
+                    <span class="text-sm px-2 py-1 border-round text-orange-500">
+                        <i class="pi pi-exclamation-triangle mr-1 text-orange-500"></i>Sin rol
+                    </span>
+                    }
                 </td>
                 <td style="text-align:center">
                     <p-tag [value]="usuario.activo ? 'Activo' : 'Inactivo'"
