@@ -9,7 +9,7 @@ import { LayoutService } from '@/app/layout/service/layout.service';
     standalone: true,
     imports: [AppMenu, RouterModule],
     template: `
-        <div class="layout-sidebar">
+        <div class="layout-sidebar flex flex-col">
             <app-menu></app-menu>
         </div>
     `

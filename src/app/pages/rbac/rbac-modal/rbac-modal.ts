@@ -67,7 +67,7 @@ export class RbacModal implements OnChanges {
   }
 
   get esMiPropioOwner(): boolean {
-    const me = this.authService.currentUser(); // <-- con ()
+    const me = this.authService.currentUser();
     return (
       !!this.usuario &&
       !!me &&
@@ -115,7 +115,7 @@ export class RbacModal implements OnChanges {
   submit() {
     this.error = null;
     this.saving = true;
-    this.cdr.detectChanges(); // fuerza render del estado saving antes del async
+    this.cdr.detectChanges();
     this.mode === 'rol' ? this.submitRol() : this.submitUsuario();
   }
 
@@ -136,7 +136,6 @@ export class RbacModal implements OnChanges {
         descripcion: this.rolDescripcion,
       }).subscribe({
         next: (rolActualizado) => {
-          // Aplicar diff de permisos si hay cambios
           if (agregar.length) {
             agregar.forEach(id => this.rolesService.asignarPermiso(this.rol!.id, id).subscribe());
           }
@@ -207,6 +206,31 @@ export class RbacModal implements OnChanges {
         next: (u) => { this.savedUsuario.emit(u); this.saving = false; this.closed.emit(); this.cdr.detectChanges(); },
         error: (err) => { this.error = err.error?.detail ?? 'Error al crear usuario.'; this.saving = false; this.cdr.detectChanges(); },
       });
+    }
+  }
+
+  get todosSeleccionados(): boolean {
+    return this.todosPermisos.length > 0 &&
+      this.todosPermisos.every(p => this.permisosSeleccionados.includes(p.id));
+  }
+
+  toggleTodos(seleccionar: boolean) {
+    this.permisosSeleccionados = seleccionar
+      ? this.todosPermisos.map(p => p.id)
+      : [];
+  }
+
+  todosDelModulo(permisos: Permiso[]): boolean {
+    return permisos.length > 0 && permisos.every(p => this.permisosSeleccionados.includes(p.id));
+  }
+
+  toggleModulo(permisos: Permiso[], seleccionar: boolean) {
+    const ids = permisos.map(p => p.id);
+    if (seleccionar) {
+      const nuevos = ids.filter(id => !this.permisosSeleccionados.includes(id));
+      this.permisosSeleccionados = [...this.permisosSeleccionados, ...nuevos];
+    } else {
+      this.permisosSeleccionados = this.permisosSeleccionados.filter(id => !ids.includes(id));
     }
   }
 

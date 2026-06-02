@@ -65,7 +65,7 @@ export class RbacUsers implements OnInit {
   }
 
   onDesactivar(usuario: Usuario) {
-    this.confirmService.delete({
+    this.confirmService.deleteWithInput({
       nombre: usuario.email,
       onAccept: () => {
         this.usuariosService.desactivarUsuario(usuario.id).subscribe({
@@ -76,10 +76,7 @@ export class RbacUsers implements OnInit {
     });
   }
 
-
   openDetail(usuario: Usuario) {
-    this.router.navigate(['/system/rbac/users', usuario.id], {
-      state: { usuario }
-    });
+    this.router.navigate(['/system/rbac/users', usuario.id], { state: { usuario } });
   }
 }

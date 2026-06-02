@@ -13,6 +13,7 @@
         <div class="flex align-items-center gap-3 py-2" style="border-bottom: 1px solid var(--surface-border);">
             <p-skeleton width="25%" height="1rem" borderRadius="4px" />
             <p-skeleton width="40%" height="1rem" borderRadius="4px" class="hidden md:block" />
+            <p-skeleton width="5rem" height="1.5rem" borderRadius="12px" class="hidden md:block" />
             <p-skeleton width="8rem" height="1.5rem" borderRadius="12px" styleClass="ml-auto" />
             <p-skeleton width="6rem" height="1.5rem" borderRadius="6px" />
         </div>
@@ -46,7 +47,8 @@
                 <th pSortableColumn="nombre">Nombre <p-sortIcon field="nombre" /></th>
                 <th class="hidden md:table-cell">Descripción</th>
                 <th style="text-align:center">Permisos</th>
-                <th pFrozenColumn alignFrozen="right" style="text-align:center; min-width: 7rem;">Acciones</th>
+                <th class="hidden md:table-cell" style="text-align:center">Usuarios</th>
+                <th pFrozenColumn alignFrozen="right" style="text-align:center; min-width: 8rem;">Acciones</th>
             </tr>
         </ng-template>
 
@@ -59,7 +61,14 @@
                 <td style="text-align:center">
                     <p-tag [value]="rol.permisos.length + ' permisos'" severity="secondary" />
                 </td>
-                <td pFrozenColumn alignFrozen="right" style="text-align:center; min-width: 7rem;">
+                <td class="hidden md:table-cell" style="text-align:center">
+                    @if (rol.total_usuarios > 0) {
+                    <span class="text-sm font-medium">{{ rol.total_usuarios }}</span>
+                    } @else {
+                    <span class="text-muted-color text-sm">—</span>
+                    }
+                </td>
+                <td pFrozenColumn alignFrozen="right" style="text-align:center; min-width: 8rem;">
                     <div class="flex gap-1 justify-content-center">
                         @if (authService.tienePermiso('gestionar_roles') && !esOwner(rol)) {
                         <p-button icon="pi pi-pencil" severity="secondary" [text]="true" size="small" pTooltip="Editar"
@@ -76,7 +85,7 @@
 
         <ng-template pTemplate="emptymessage">
             <tr>
-                <td colspan="4" class="text-center text-muted-color py-6">
+                <td colspan="5" class="text-center text-muted-color py-6">
                     <i class="pi pi-shield text-4xl mb-3 block opacity-30"></i>
                     No hay roles registrados.
                 </td>
