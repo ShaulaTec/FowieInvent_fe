@@ -1,5 +1,4 @@
-// src/app/pages/rbac/rbac-modal/rbac-modal.ts
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
@@ -11,9 +10,9 @@ import { MessageModule } from 'primeng/message';
 import { CheckboxModule } from 'primeng/checkbox';
 import { RolesService } from '@/app/core/service/roles.service';
 import { UsuariosService } from '@/app/core/service/users.service';
+import { AuthService } from '@/app/core/service/auth.service';
 import { Rol, Permiso } from '@/app/core/models/roles.models';
 import { Usuario, UsuarioCreate } from '@/app/core/models/users.models';
-import { forkJoin } from 'rxjs';
 
 export type RbacModalMode = 'rol' | 'usuario';
 
@@ -38,6 +37,8 @@ export class RbacModal implements OnChanges {
 
   private rolesService = inject(RolesService);
   private usuariosService = inject(UsuariosService);
+  private authService = inject(AuthService);
+  private cdr = inject(ChangeDetectorRef);
 
   saving = false;
   error: string | null = null;
@@ -45,7 +46,7 @@ export class RbacModal implements OnChanges {
   rolNombre = '';
   rolDescripcion = '';
   todosPermisos: Permiso[] = [];
-  permisosSeleccionados: string[] = []; // ids de Permiso
+  permisosSeleccionados: string[] = [];
 
   usuarioEmail = '';
   usuarioPassword = '';
@@ -57,7 +58,22 @@ export class RbacModal implements OnChanges {
       this.error = null;
       this.saving = false;
       this.initForm();
+      this.cdr.detectChanges();
     }
+  }
+
+  get esOwner(): boolean {
+    return this.rol?.nombre === 'Owner';
+  }
+
+  get esMiPropioOwner(): boolean {
+    const me = this.authService.currentUser(); // <-- con ()
+    return (
+      !!this.usuario &&
+      !!me &&
+      this.usuario.id === me.id &&
+      this.usuario.rol?.nombre === 'Owner'
+    );
   }
 
   private initForm() {
@@ -65,14 +81,14 @@ export class RbacModal implements OnChanges {
       this.rolNombre = this.rol?.nombre ?? '';
       this.rolDescripcion = this.rol?.descripcion ?? '';
       this.permisosSeleccionados = this.rol?.permisos.map(p => p.id) ?? [];
-      this.rolesService.getPermisos().subscribe(p => this.todosPermisos = p);
+      this.rolesService.getPermisos().subscribe(p => { this.todosPermisos = p; this.cdr.detectChanges(); });
     }
 
     if (this.mode === 'usuario') {
       this.usuarioEmail = this.usuario?.email ?? '';
       this.usuarioPassword = '';
       this.usuarioRolId = this.usuario?.rol?.id ?? '';
-      this.rolesService.getRoles().subscribe(r => this.rolesDisponibles = r);
+      this.rolesService.getRoles().subscribe(r => { this.rolesDisponibles = r; this.cdr.detectChanges(); });
     }
   }
 
@@ -99,6 +115,7 @@ export class RbacModal implements OnChanges {
   submit() {
     this.error = null;
     this.saving = true;
+    this.cdr.detectChanges(); // fuerza render del estado saving antes del async
     this.mode === 'rol' ? this.submitRol() : this.submitUsuario();
   }
 
@@ -106,33 +123,32 @@ export class RbacModal implements OnChanges {
     if (!this.rolNombre.trim()) {
       this.error = 'El nombre del rol es obligatorio.';
       this.saving = false;
+      this.cdr.detectChanges();
       return;
     }
 
     if (this.rol) {
       const rolPermisoActuales = this.rol.permisos.map(p => p.id);
       const agregar = this.permisosSeleccionados.filter(id => !rolPermisoActuales.includes(id));
-      const quitar = rolPermisoActuales.filter(id => !this.permisosSeleccionados.includes(id));
 
       this.rolesService.actualizarRol(this.rol.id, {
         nombre: this.rolNombre,
         descripcion: this.rolDescripcion,
       }).subscribe({
         next: (rolActualizado) => {
-          const ops$ = [
-            ...agregar.map(id => this.rolesService.asignarPermiso(this.rol!.id, id)),
-            ...quitar.map(id => {
-              return this.rolesService.getRolPermisos();
-            }),
-          ];
-
+          // Aplicar diff de permisos si hay cambios
+          if (agregar.length) {
+            agregar.forEach(id => this.rolesService.asignarPermiso(this.rol!.id, id).subscribe());
+          }
           this.saving = false;
           this.savedRol.emit(rolActualizado);
           this.closed.emit();
+          this.cdr.detectChanges();
         },
         error: (err) => {
           this.error = err.error?.detail ?? 'Error al actualizar el rol.';
           this.saving = false;
+          this.cdr.detectChanges();
         },
       });
     } else {
@@ -147,11 +163,13 @@ export class RbacModal implements OnChanges {
             if (nuevo) this.savedRol.emit(nuevo);
             this.saving = false;
             this.closed.emit();
+            this.cdr.detectChanges();
           });
         },
         error: (err) => {
           this.error = err.error?.detail ?? 'Error al crear el rol.';
           this.saving = false;
+          this.cdr.detectChanges();
         },
       });
     }
@@ -161,6 +179,7 @@ export class RbacModal implements OnChanges {
     if (!this.usuarioEmail.trim() || !this.usuarioRolId) {
       this.error = 'Email y rol son obligatorios.';
       this.saving = false;
+      this.cdr.detectChanges();
       return;
     }
 
@@ -169,14 +188,14 @@ export class RbacModal implements OnChanges {
         email: this.usuarioEmail,
         rol_id: this.usuarioRolId,
       }).subscribe({
-        next: (u) => { this.savedUsuario.emit(u); this.saving = false; this.closed.emit(); },
-        error: (err) => { this.error = err.error?.detail ?? 'Error al actualizar.'; this.saving = false; },
+        next: (u) => { this.savedUsuario.emit(u); this.saving = false; this.closed.emit(); this.cdr.detectChanges(); },
+        error: (err) => { this.error = err.error?.detail ?? 'Error al actualizar.'; this.saving = false; this.cdr.detectChanges(); },
       });
     } else {
-      // Crear
       if (!this.usuarioPassword || this.usuarioPassword.length < 8) {
         this.error = 'La contraseña debe tener al menos 8 caracteres.';
         this.saving = false;
+        this.cdr.detectChanges();
         return;
       }
       const payload: UsuarioCreate = {
@@ -185,8 +204,8 @@ export class RbacModal implements OnChanges {
         rol_id: this.usuarioRolId,
       };
       this.usuariosService.crearUsuario(payload).subscribe({
-        next: (u) => { this.savedUsuario.emit(u); this.saving = false; this.closed.emit(); },
-        error: (err) => { this.error = err.error?.detail ?? 'Error al crear usuario.'; this.saving = false; },
+        next: (u) => { this.savedUsuario.emit(u); this.saving = false; this.closed.emit(); this.cdr.detectChanges(); },
+        error: (err) => { this.error = err.error?.detail ?? 'Error al crear usuario.'; this.saving = false; this.cdr.detectChanges(); },
       });
     }
   }
