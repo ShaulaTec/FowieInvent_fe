@@ -9,6 +9,7 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { MessageModule } from 'primeng/message';
 import { AppNav, NavItem } from '@/app/layout/component/app.nav';
 import { AuthService } from '@/app/core/service/auth.service';
+import { CancelSubscription } from './cancel-subscription/cancel-subscription';
 import localeEs from '@angular/common/locales/es';
 
 registerLocaleData(localeEs);
@@ -25,6 +26,7 @@ registerLocaleData(localeEs);
     AppNav,
     DatePipe,
     TitleCasePipe,
+    CancelSubscription,
   ],
   templateUrl: './my-business.html',
   styleUrl: './my-business.scss',
