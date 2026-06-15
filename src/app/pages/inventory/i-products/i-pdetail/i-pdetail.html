@@ -58,6 +58,14 @@
 
         <div class="col-12 md:col-6 flex flex-col gap-1 mb-3">
             <span class="text-xs text-muted-color font-medium uppercase" style="letter-spacing: 0.05em;">
+                Imagen
+            </span>
+            <img *ngIf="producto.imagen" [src]="producto.imagen" alt="Imagen del producto" 
+                class="w-full h-48 object-cover border border-solid border-gray-300 rounded" />
+        </div>
+
+        <div class="col-12 md:col-6 flex flex-col gap-1 mb-3">
+            <span class="text-xs text-muted-color font-medium uppercase" style="letter-spacing: 0.05em;">
                 Unidad de medida
             </span>
             <span class="font-medium">{{ producto.unidad_medida }}</span>
