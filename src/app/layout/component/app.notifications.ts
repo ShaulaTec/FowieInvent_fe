@@ -1,17 +1,10 @@
 // app.notifications.ts
-import { Component, signal, computed } from '@angular/core';
+import { Component, signal, computed, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DrawerModule } from 'primeng/drawer';
 import { ButtonModule } from 'primeng/button';
+import { NotificationsService, Notificacion } from 'src/app/services/notifications';
 
-export interface Notificacion {
-  id: string;
-  tipo: string;
-  modulo: string;
-  mensaje: string;
-  leida: boolean;
-  created_at: string;
-}
 
 @Component({
   selector: 'app-notifications',
@@ -31,6 +24,8 @@ export interface Notificacion {
       [style]="{ height: 'auto', maxHeight: '60vh' }"
       [showCloseIcon]="false"
       styleClass="notifications-drawer"
+      [modal]="false"
+      [blockScroll]="false"
     >
       <ng-template pTemplate="header">
         <div class="flex align-items-center justify-content-between w-full">
@@ -121,53 +116,57 @@ export interface Notificacion {
       justify-content: center;
       padding: 0 3px;
       pointer-events: none;
+      z-index: 1000;
     }
     .notification-item:hover { background: var(--p-surface-50); }
     .notification-unread { background: var(--p-surface-50); }
   `]
 })
-export class AppNotifications {
+export class AppNotifications implements OnInit {
+
+  private notificationService = inject(NotificationsService);
+
   visible = false;
 
-  notificaciones = signal<Notificacion[]>([
-    {
-      id: '1',
-      tipo: 'stock_bajo',
-      modulo: 'Inventario',
-      mensaje: 'El producto "Tornillo 3/8" está por debajo del stock mínimo (quedan 3 unidades).',
-      leida: false,
-      created_at: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
-    },
-    {
-      id: '2',
-      tipo: 'sin_stock',
-      modulo: 'Inventario',
-      mensaje: 'El producto "Cable eléctrico 2.5mm" se ha quedado sin stock.',
-      leida: false,
-      created_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
-    },
-    {
-      id: '3',
-      tipo: 'movimiento',
-      modulo: 'Inventario',
-      mensaje: 'Se registró una entrada de 50 unidades de "Pintura blanca 4L".',
-      leida: true,
-      created_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-    },
-  ]);
+  // Se inicializa vacío; los datos vendrán del backend
+  notificaciones = signal<Notificacion[]>([]);
 
-  noLeidas = computed(() => this.notificaciones().filter(n => !n.leida).length);
+  noLeidas = computed(() =>
+    this.notificaciones().filter(n => !n.leida).length
+  );
 
-  toggle() { this.visible = !this.visible; }
+  ngOnInit(): void {
+    this.cargarNotificaciones();
+  }
+
+  cargarNotificaciones() {
+  this.notificationService.getNotificaciones().subscribe({
+    next: (data) => {
+      console.log('NOTIFICACIONES:', data);
+      this.notificaciones.set(data);
+    },
+    error: (err) => console.error(err)
+  });
+}
+
+  toggle() {
+    this.visible = !this.visible;
+  }
 
   marcarLeida(id: string) {
     this.notificaciones.update(lista =>
-      lista.map(n => n.id === id ? { ...n, leida: true } : n)
+      lista.map(n =>
+        n.id === id
+          ? { ...n, leida: true }
+          : n
+      )
     );
   }
 
   marcarTodasLeidas() {
-    this.notificaciones.update(lista => lista.map(n => ({ ...n, leida: true })));
+    this.notificaciones.update(lista =>
+      lista.map(n => ({ ...n, leida: true }))
+    );
   }
 
   getIcon(tipo: string): string {
@@ -199,4 +198,6 @@ export class AppNotifications {
     };
     return map[tipo] ?? 'var(--p-text-muted-color)';
   }
+
+
 }
