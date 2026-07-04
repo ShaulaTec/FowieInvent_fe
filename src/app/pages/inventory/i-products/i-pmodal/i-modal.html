@@ -86,6 +86,13 @@
             <p-toggleswitch [(ngModel)]="activo" />
         }
 
+        <div class="flex flex-col gap-1 flex-1">
+            <label class="font-medium text-sm">Imagen del producto</label>
+            <small class="text-xs text-muted-color">Opcional. Formato: JPG, PNG</small>
+            <img *ngIf="imagen" [src]="imagen" alt="Imagen del producto" class="w-full h-auto max-h-64 object-contain border-round" />
+            <input type="file" accept="image/*" (change)="onFileSelected($event)" />
+        </div>
+
     </div>
 
     <ng-template pTemplate="footer">

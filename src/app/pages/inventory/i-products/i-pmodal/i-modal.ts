@@ -56,6 +56,7 @@ export class IModal implements OnInit {
     stock_actual = 0;
     stock_minimo = 0;
     activo = true;
+    imagen: string | null = null;
 
     get isEdit(): boolean { return !!this.producto(); }
     get title(): string { return this.isEdit ? 'Editar producto' : 'Nuevo producto'; }
@@ -80,15 +81,32 @@ export class IModal implements OnInit {
             this.unidad_medida = p.unidad_medida;
             this.stock_actual = p.stock_actual;
             this.stock_minimo = p.stock_minimo;
-            this.activo = p.activo
+            this.activo = p.activo;
+            this.imagen = p.imagen || null;
         } else {
             this.nombre = '';
             this.categoria_id = '';
             this.unidad_medida = '';
             this.stock_actual = 0;
             this.stock_minimo = 0;
-            this.activo = true
+            this.activo = true;
+            this.imagen = null;
         }
+    }
+
+    onFileSelected(event: Event) {
+        const input = event.target as HTMLInputElement;
+        if (!input.files?.length) {
+            this.imagen = null;
+            return;
+        }
+
+        const file = input.files[0];
+        const reader = new FileReader();
+        reader.onload = () => {
+            this.imagen = reader.result as string;
+        };
+        reader.readAsDataURL(file);
     }
 
     // ── Inline categoría ──────────────────────────────────────────────────────
@@ -152,7 +170,14 @@ export class IModal implements OnInit {
                 unidad_medida: this.unidad_medida,
                 stock_minimo: this.stock_minimo,
                 activo: this.activo,
+                // imagen: this.imagen || undefined,
             };
+            if (this.imagen && this.imagen.startsWith('data:')) {
+                dto.imagen = this.imagen;
+            } else if (!this.imagen && p.imagen) {
+                // Si el usuario borró la imagen que ya existía, mandas null o vacío según tu backend
+                dto.imagen = null;
+            }
             this.inventoryService.updateProducto(p.id, dto).subscribe({
                 next: updated => { this.loading = false; this.saved.emit(updated); },
                 error: () => { this.loading = false; this.error = 'Error al guardar. Intenta de nuevo.'; },
@@ -164,6 +189,7 @@ export class IModal implements OnInit {
                 unidad_medida: this.unidad_medida,
                 stock_actual: this.stock_actual,
                 stock_minimo: this.stock_minimo,
+                imagen: this.imagen || undefined,
             };
             this.inventoryService.createProducto(dto).subscribe({
                 next: created => { this.loading = false; this.saved.emit(created); },
