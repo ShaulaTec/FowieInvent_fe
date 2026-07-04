@@ -11,7 +11,8 @@ import { AppNav, NavItem } from '@/app/layout/component/app.nav';
 import { AuthService } from '@/app/core/service/auth.service';
 import { CancelSubscription } from './cancel-subscription/cancel-subscription';
 import localeEs from '@angular/common/locales/es';
-
+import { Router } from '@angular/router';
+import { SubscriptionService } from '@/app/services/subscription';
 registerLocaleData(localeEs);
 
 @Component({
@@ -77,5 +78,28 @@ export class MyBusiness implements OnInit {
     if (this.tenant.estado === 'activo') return 'success';
     if (this.tenant.estado === 'suspendido') return 'warn';
     return 'danger';
+  }
+
+  private subscriptionService = inject(SubscriptionService);
+  private router = inject(Router);
+
+  ejecutarBajaServicio() {
+    this.subscriptionService.cancelarSuscripcion().subscribe({
+      next: (response) => {
+        console.log('Backend respondió:', response.detail);
+        
+        // ¡Éxito! Como el backend inactivó su negocio, lo ideal es sacarlo de la app
+        // Borramos tokens si aplica o redirigimos a una página de despedida/login
+        alert('Tu suscripción ha sido cancelada correctamente.');
+        
+        
+      },
+      error: (err) => {
+        console.error('Error al procesar la baja:', err);
+        // Aquí puedes capturar el error 403 de Django por si no tiene permisos
+        const errorMsg = err.error?.detail || 'No se pudo procesar la cancelación.';
+        alert(errorMsg);
+      }
+    });
   }
 }

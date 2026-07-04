@@ -15,7 +15,7 @@ export interface Producto {
     stock_actual: number;
     stock_minimo: number;
     activo: boolean;
-    imagen?: string;
+    imagen?: string | null;
     created_at: string;
 }
 
@@ -48,6 +48,7 @@ export interface CreateProductoDto {
     unidad_medida: string;
     stock_actual?: number;
     stock_minimo?: number;
+    imagen?: string | null;
 }
 
 export interface UpdateProductoDto extends Partial<CreateProductoDto> {
