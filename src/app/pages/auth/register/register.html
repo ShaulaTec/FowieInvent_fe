@@ -1,0 +1,197 @@
+<app-floating-configurator />
+
+<div class="auth-shell">
+    <div class="auth-form bg-surface-0 dark:bg-surface-950">
+
+        <a routerLink="/" class="auth-form__brand">
+            <span class="w-2rem h-2rem border-circle bg-primary flex align-items-center justify-content-center">
+                <i class="pi pi-box text-white text-sm"></i>
+            </span>
+            <span class="font-bold text-xl text-900">FowieInvent</span>
+        </a>
+
+        <h1 class="text-surface-900 dark:text-surface-0 text-3xl font-bold mb-1">Crea tu cuenta</h1>
+        <p class="text-muted-color mt-1 mb-5">Empieza gratis. Sin tarjeta de crédito.</p>
+
+        <div class="flex flex-col gap-4">
+
+            @if (error()) {
+            <p-message severity="error" [text]="error()!" styleClass="w-full"></p-message>
+            }
+
+            <div class="flex gap-3">
+                <div class="flex flex-col gap-1 flex-1">
+                    <label class="text-surface-900 dark:text-surface-0 font-medium text-sm">Nombre</label>
+                    <input pInputText type="text" placeholder="Juan" class="w-full" [(ngModel)]="nombre"
+                        [disabled]="loading()" />
+                </div>
+                <div class="flex flex-col gap-1 flex-1">
+                    <label class="text-surface-900 dark:text-surface-0 font-medium text-sm">Apellido</label>
+                    <input pInputText type="text" placeholder="García" class="w-full" [(ngModel)]="apellido"
+                        [disabled]="loading()" />
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="text-surface-900 dark:text-surface-0 font-medium text-sm">Correo electrónico</label>
+                <input pInputText type="email" placeholder="correo@ejemplo.com" class="w-full" [(ngModel)]="email"
+                    [disabled]="loading()" />
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="text-surface-900 dark:text-surface-0 font-medium text-sm">Nombre del negocio</label>
+                <input pInputText type="text" placeholder="Mi Tienda S.A." class="w-full" [(ngModel)]="negocio"
+                    [disabled]="loading()" />
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="text-surface-900 dark:text-surface-0 font-medium text-sm">Plan</label>
+                @if (loadingPlanes()) {
+                <p-skeleton width="100%" height="2.75rem" borderRadius="6px" />
+                } @else {
+                <p-select [options]="planes" [(ngModel)]="planSeleccionado" (ngModelChange)="onPlanChange()"
+                    optionLabel="nombre" optionValue="id" placeholder="Selecciona un plan" [fluid]="true"
+                    [disabled]="loading()">
+                    <ng-template pTemplate="selectedItem" let-plan>
+                        @if (plan) {
+                        <div class="flex align-items-center justify-content-between w-full gap-3">
+                            <span>{{ plan.nombre }}</span>
+                            <span class="text-primary font-medium text-sm">
+                                {{ '$' + plan.precio_mensual }}<span class="text-muted-color font-normal">/mes</span>
+                            </span>
+                        </div>
+                        }
+                    </ng-template>
+                    <ng-template pTemplate="item" let-plan>
+                        <div class="flex align-items-center justify-content-between w-full gap-3">
+                            <div>
+                                <div class="font-medium text-sm">{{ plan.nombre }}</div>
+                                <div class="text-xs text-muted-color">
+                                    {{ plan.max_usuarios }} usuario{{ plan.max_usuarios > 1 ? 's' : '' }} ·
+                                    {{ plan.max_productos }} productos ·
+                                    {{ plan.max_categorias }} categorías
+                                </div>
+                            </div>
+                            <span class="font-bold text-primary text-sm" style="white-space: nowrap; flex-shrink: 0;">
+                                {{ '$' + plan.precio_mensual }}<span
+                                    class="text-xs text-muted-color font-normal">/mes</span>
+                            </span>
+                        </div>
+                    </ng-template>
+                </p-select>
+                }
+            </div>
+
+            @if (requierePago()) {
+            <div class="flex flex-col gap-1">
+                <label class="text-surface-900 dark:text-surface-0 font-medium text-sm flex align-items-center gap-2">
+                    <i class="pi pi-credit-card"></i>
+                    Método de pago
+                </label>
+
+                @if (stripeLoading()) {
+                <div class="stripe-card-skeleton">
+                    <i class="pi pi-spin pi-spinner"></i>
+                    <span>Cargando formulario de pago…</span>
+                </div>
+                }
+
+                <div [style.display]="stripeLoading() ? 'none' : 'block'" class="flex flex-col gap-2">
+                    <div #cardNumberElement class="stripe-input" [class.stripe-input--error]="stripeError()"></div>
+
+                    <div class="flex gap-2">
+                        <div #cardExpiryElement class="stripe-input flex-1"></div>
+                        <div #cardCvcElement class="stripe-input flex-1"></div>
+                    </div>
+                </div>
+
+                @if (stripeError()) {
+                <small class="text-red-500 flex align-items-center gap-1">
+                    <i class="pi pi-exclamation-circle"></i>
+                    {{ stripeError() }}
+                </small>
+                }
+            </div>
+            }
+
+            <div class="flex flex-col gap-1">
+                <label class="text-surface-900 dark:text-surface-0 font-medium text-sm">Contraseña</label>
+                <p-password [(ngModel)]="password" placeholder="Contraseña" [toggleMask]="true" [fluid]="true"
+                    promptLabel="Ingresa una contraseña" weakLabel="Débil" mediumLabel="Media" strongLabel="Fuerte"
+                    [disabled]="loading()">
+                </p-password>
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="text-surface-900 dark:text-surface-0 font-medium text-sm">Confirmar contraseña</label>
+                <p-password [(ngModel)]="confirmPassword" placeholder="Repite tu contraseña" [toggleMask]="true"
+                    [fluid]="true" [feedback]="false" [disabled]="loading()">
+                </p-password>
+                @if (passwordMismatch()) {
+                <small class="text-red-500">Las contraseñas no coinciden.</small>
+                }
+            </div>
+
+            <div class="flex align-items-start gap-2">
+                <p-checkbox [(ngModel)]="aceptaTerminos" id="terminos" binary [disabled]="loading()"></p-checkbox>
+                <label for="terminos" class="text-sm text-muted-color" style="line-height:1.5">
+                    Acepto los <a class="text-primary cursor-pointer font-medium">términos de servicio</a>
+                    y la <a class="text-primary cursor-pointer font-medium">política de privacidad</a>
+                </label>
+            </div>
+
+            <p-button label="Crear cuenta" styleClass="w-full" [loading]="loading()" [disabled]="!canSubmit()"
+                (onClick)="onRegister()">
+            </p-button>
+
+            <p-divider></p-divider>
+
+            <p class="text-center text-muted-color text-sm m-0">
+                ¿Ya tienes cuenta?
+                <a routerLink="/auth/login" class="text-primary font-medium cursor-pointer ml-1">Inicia sesión</a>
+            </p>
+        </div>
+    </div>
+
+    <div class="auth-panel hidden md:flex">
+        <div>
+            <p-tag value="v0.2 · En desarrollo" severity="success"></p-tag>
+            <h2 class="auth-panel__title">
+                Inventario<br />
+                <span style="opacity:0.7">sin cuotas</span><br />
+                imposibles.
+            </h2>
+            <p class="auth-panel__sub">
+                FowieInvent democratiza el control de inventario para pequeños negocios en México.
+            </p>
+        </div>
+
+        <div class="flex flex-col gap-4">
+            @for (feature of features; track feature.icon) {
+            <div class="flex align-items-start gap-3">
+                <div class="auth-panel__icon">
+                    <i class="pi {{ feature.icon }}" style="color:white; font-size:1.2rem;"></i>
+                </div>
+                <div>
+                    <div style="color:white; font-weight:600; margin-bottom:0.25rem;">{{ feature.title }}</div>
+                    <div style="color:rgba(255,255,255,0.6); font-size:0.875rem; line-height:1.6;">{{ feature.desc }}
+                    </div>
+                </div>
+            </div>
+            }
+        </div>
+
+        <div class="flex gap-3">
+            @for (stat of stats; track stat.val) {
+            <div class="auth-panel__stat">
+                <div style="color:white; font-size:1.25rem; font-weight:700;">{{ stat.val }}</div>
+                <div style="color:rgba(255,255,255,0.6); font-size:0.75rem; margin-top:0.25rem;">{{ stat.label }}</div>
+            </div>
+            }
+        </div>
+
+        <p style="color:rgba(255,255,255,0.4); font-size:0.75rem; margin:0;">
+            © 2026 ShaulaTec · Morelia, México · Licencia AGPL
+        </p>
+    </div>
+</div>
