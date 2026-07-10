@@ -12,6 +12,7 @@ export interface RegisterRequest {
     password: string;
     nombre_negocio: string;
     plan_id?: string;
+    payment_method_id?: string; 
 }
 
 export interface AuthTokens {

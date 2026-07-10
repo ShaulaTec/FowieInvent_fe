@@ -2,15 +2,21 @@
 // Plan
 // ---------------------------------------------------------------------------
 export interface Plan {
-  id: string;
-  nombre: string;
-  max_usuarios: number;
-  max_productos: number;
-  max_categorias: number;
-  precio_mensual: string;
-  activo: boolean;
+    id: string;
+    nombre: string;
+    max_usuarios: number;
+    max_productos: number;
+    max_categorias: number;
+    precio_mensual: string;
+    activo: boolean;
+    billing_plan: {
+        id: string;
+        amount: number;
+        currency: string;
+        interval: string;
+    } | null;
+    requiere_pago: boolean; // nuevo
 }
-
 // ---------------------------------------------------------------------------
 // Modulo
 // ---------------------------------------------------------------------------
